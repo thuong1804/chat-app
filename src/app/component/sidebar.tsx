@@ -27,6 +27,7 @@ import * as EmailValidator from "email-validator";
 import { addDoc, collection, query, where } from "firebase/firestore";
 import { Conversation } from "@/app/types/type";
 import ConversationSelect from "./ConversationSelect";
+import Loading from "./login-loading";
 
 const StyleContainer = styled.div`
   height: 98vh;
@@ -77,6 +78,7 @@ const SideBar = () => {
   const [loggerInUser, _loading, _error] = useAuthState(auth);
   const [openNewConversation, setOpenNewConversation] = useState(false);
   const [textInputEmail, setTextInputEmail] = useState("");
+
   const logOut = async () => {
     try {
       await signOut(auth);
