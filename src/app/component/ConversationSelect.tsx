@@ -7,7 +7,7 @@ const StyledContainer = styled.div`
   align-items: center;
   cursor: pointer;
   padding: 15px;
-  gap: 2px;
+  gap: 10px;
   word-break: break-all;
 
   &:hover {
