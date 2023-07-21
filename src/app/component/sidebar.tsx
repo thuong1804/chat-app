@@ -1,13 +1,5 @@
 "use client";
-
-import {
-  Avatar,
-  Button,
-  Icon,
-  IconButton,
-  TextField,
-  Tooltip,
-} from "@mui/material";
+import { Avatar, Button, IconButton, TextField, Tooltip } from "@mui/material";
 import ChatIcon from "@mui/icons-material/Chat";
 import MoreVerTicalIcon from "@mui/icons-material/MoreVert";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -27,15 +19,24 @@ import * as EmailValidator from "email-validator";
 import { addDoc, collection, query, where } from "firebase/firestore";
 import { Conversation } from "@/app/types/type";
 import ConversationSelect from "./ConversationSelect";
-import Loading from "./login-loading";
 
 const StyleContainer = styled.div`
-  height: 98vh;
+  height: 100vh;
   min-width: 300px;
   max-width: 350px;
   overflow-y: scroll;
   border-right: 1px solid whitesmoke;
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 `;
+
 const StyleHeader = styled.div`
   display: flex;
   justify-content: space-between;
@@ -90,27 +91,25 @@ const SideBar = () => {
     setOpenNewConversation(!openNewConversation);
     setTextInputEmail("");
   };
-  // ham` kiem tra coversation da ton` tai khi nguoi dung dang nhap hay chua
+  // ham` kiem tra conversation da ton` tai khi nguoi dung dang nhap hay chua
   const queryGetConversationForCurrentUser = query(
-    collection(db, "coversation"),
-    where("users", "array-contains", loggerInUser?.email)
+    collection(db, "conversation"),
+    where("user", "array-contains", loggerInUser?.email || "")
   );
-  const [conversationSnapshot] = useCollection(
+  const [conversationSnapshot, __loading, __error] = useCollection(
     queryGetConversationForCurrentUser
   );
   // ham` kiem tra xem gmail nao` da~ duoc moi` vao chat
   const isConversationAlreadyExits = (textInputEmail: string) => {
-    return conversationSnapshot?.docs.find((coversation) =>
-      (coversation.data() as Conversation).users.includes(textInputEmail)
-    ); //props docs nhan tat ca cac document coversation
+    return conversationSnapshot?.docs.find((conversation) =>
+      (conversation.data() as Conversation).user.includes(textInputEmail)
+    ); //props docs nhan tat ca cac document conversation
     //conversationSnapshot lay tat ca cac cuoc hoi thoai bao gom user dang loggin
   };
   const isInvitingSelf = textInputEmail === loggerInUser?.email; // khi tu nhap vao email chinh minh
   const handleClose = () => {
     setOpenNewConversation(!openNewConversation);
   };
-
-  console.log("conversation", conversationSnapshot?.docs);
 
   // ham tao cuoc hoi thoai
   const handleCreateConversation = async () => {
@@ -121,9 +120,9 @@ const SideBar = () => {
       !isConversationAlreadyExits(textInputEmail)
     ) {
       // neu la email va khong phai tu moi` minh` thi` add vao db
-      //add vao db coversation
-      await addDoc(collection(db, "coversation"), {
-        users: [loggerInUser?.email, textInputEmail],
+      //add vao db conversation
+      await addDoc(collection(db, "conversation"), {
+        user: [loggerInUser?.email, textInputEmail],
       });
     }
     handleClose();
@@ -156,11 +155,11 @@ const SideBar = () => {
       <StyleSideBarButton onClick={handleClickOpen}>
         Start New Conversation
       </StyleSideBarButton>
-      {conversationSnapshot?.docs.map((coversation) => (
+      {conversationSnapshot?.docs.map((conversation) => (
         <ConversationSelect
-          key={coversation.id}
-          id={coversation.id}
-          coversationUser={(coversation.data() as Conversation).users}
+          key={conversation.id}
+          id={conversation.id}
+          conversationUser={(conversation.data() as Conversation).user}
         />
       ))}
       <Dialog open={openNewConversation} onClose={handleClose}>

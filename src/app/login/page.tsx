@@ -6,6 +6,7 @@ import Image from "next/image";
 import WhatsAppLogo from "../acsset/WhatsApp.svg.webp";
 import { useSignInWithGoogle } from "react-firebase-hooks/auth";
 import { auth } from "../config/firebase";
+import { useRouter } from "next/navigation";
 
 const StyleContainer = styled.div`
   height: 100vh;
@@ -27,9 +28,11 @@ const StyleImageWrapper = styled.div`
 `;
 
 const Login = () => {
+  const router = useRouter();
   const [signInWithGoogle, _user, _loading, _error] = useSignInWithGoogle(auth);
 
   const handelSignInGoogle = () => {
+    // router.push("/component");
     signInWithGoogle();
   };
   return (

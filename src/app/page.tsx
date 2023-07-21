@@ -6,8 +6,10 @@ import { auth, db } from "./config/firebase";
 import Login from "./login/page";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
-
-export default function Home() {
+import { AppProps } from "next/app";
+import Conversation from "./conversation/[id]/page";
+import Link from "next/link";
+export default function Home({ pageProps }: AppProps) {
   const [loggerInUser, loading, _error] = useAuthState(auth);
   useEffect(() => {
     const setUserinDB = async () => {
@@ -33,12 +35,16 @@ export default function Home() {
   if (loading) {
     return <Loading></Loading>;
   }
+
   if (!loggerInUser) {
     return <Login></Login>;
   }
+  // if (loggerInUser) {
+  //   <Conversation></Conversation>;
+  // }
   return (
     <>
-      <SideBar></SideBar>
+      <SideBar {...pageProps}></SideBar>
     </>
   );
 }
