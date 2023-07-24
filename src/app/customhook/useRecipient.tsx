@@ -4,10 +4,12 @@ import { auth, db } from "../config/firebase";
 import { getRecipientEmail } from "../ultils/getRecipientEmail";
 import { collection, query, where } from "firebase/firestore";
 import { useCollection } from "react-firebase-hooks/firestore";
+import { use, useEffect, useState } from "react";
 
 //component hook lay gmail
 const useRecipient = (conversationUser: Conversation["user"]) => {
   const [loggerInUser, _loading, _error] = useAuthState(auth);
+  // const [recipientEmail, setRecipientEmail] = useState({});
 
   //get recipient Email , lay gmail cua nguoi duoc moi
   const recipientEmail = getRecipientEmail(conversationUser, loggerInUser);

@@ -3,9 +3,32 @@
   background-color: white;
   z-index: 100;
   top: 0;
+  height: auto;
+  width: 100%;
+
+  .box-chat {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid whitesmoke;
+    gap: 5px;
+    justify-content: space-between;
+    padding: 10px;
+  }
+}
+.box-chat div:first-child {
   display: flex;
-  align-items: center;
-  padding: 10px;
-  height: 80px;
-  border-bottom: 1px solid whitesmoke;
+  gap: 10px;
+}
+.head-email {
+  font-weight: bold;
+  word-break: break-all;
+}
+.main-chat-box {
+  background-color: #e5ded8;
+  padding: 30px;
+  min-height: 90vh;
+}
+span {
+  color: gray;
+  font-size: 0.8rem;
 }

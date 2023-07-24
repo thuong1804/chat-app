@@ -30,4 +30,4 @@ export const transformMessege = (
   } as Imessege);
 
 export const convertFiretoreTimestampToString = (timeStamp: Timestamp) =>
-  new Date(timeStamp.toDate().getTime().toLocaleString());
+  new Date(timeStamp.toDate().getTime()).toLocaleString();
