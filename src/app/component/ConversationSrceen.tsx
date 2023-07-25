@@ -12,8 +12,43 @@ import AttachFileIcon from "@mui/icons-material/AttachFile";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useParams } from "next/navigation";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../config/firebase";
+import { auth, db } from "../config/firebase";
 import { useCollection } from "react-firebase-hooks/firestore";
+import Messege from "./messege";
+import InsertEmoticonIcon from "@mui/icons-material/InsertEmoticon";
+import IconButton from "@mui/material/IconButton";
+import SendIcon from "@mui/icons-material/Send";
+import KeyboardVoiceIcon from "@mui/icons-material/KeyboardVoice";
+import { styled } from "styled-components";
+import { KeyboardEventHandler, MouseEventHandler, useState } from "react";
+import {
+  addDoc,
+  collection,
+  doc,
+  serverTimestamp,
+  setDoc,
+} from "firebase/firestore";
+
+const StyledInputContainer = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  position: sticky;
+  bottom: 0;
+  background-color: white;
+  z-index: 100;
+`;
+const StyledInput = styled.input`
+  flex-grow: 1;
+  outline: none;
+  border: none;
+  border-radius: 10px;
+  background-color: whitesmoke;
+  padding: 15px;
+  margin-left: 15px;
+  margin-right: 15px;
+`;
+
 const ConversationSrceen = ({
   conversation,
   conversationmessege,
@@ -25,7 +60,7 @@ const ConversationSrceen = ({
   const conversationUser = conversation.user;
   const params = useParams();
   console.log(params.id);
-
+  const [newMessege, setNewMessege] = useState("");
   const conversationId = params?.id;
   const queryMessege = generateQueryGetMessages(conversationId as string);
   console.log({ conversationId });
@@ -35,18 +70,55 @@ const ConversationSrceen = ({
   //neu giao dien loading messege truoc thi return messege tu ssr {from [id].tsx}
   const showMessege = () => {
     if (!messegeLoading) {
-      return conversationmessege.map((mes, index) => (
-        <p key={index}>{JSON.stringify(mes)}</p>
+      return conversationmessege.map((messege) => (
+        <Messege key={messege.id} messege={messege}></Messege>
       ));
     }
 
     if (messegeSnapshot) {
-      messegeSnapshot.docs.map((messege, index) => (
-        <p key={index}>{JSON.stringify(transformMessege(messege))}</p>
+      messegeSnapshot.docs.map((messege) => (
+        <Messege key={messege.id} messege={transformMessege(messege)}></Messege>
       ));
     }
     return null;
   };
+  const addMessegeToDbAndUpdateLastSeen = async () => {
+    await setDoc(
+      doc(db, "user", loggerInUser?.email as string),
+      {
+        lastSeen: serverTimestamp(),
+      },
+      { merge: true } // chi update nhung gi da thay doi
+    );
+
+    // add new messege
+    await addDoc(collection(db, "messeges"), {
+      conversation_id: conversationId,
+      sent_at: serverTimestamp(),
+      text: newMessege,
+      user: loggerInUser?.email,
+    });
+
+    //reset new mess
+    setNewMessege("");
+  };
+  const sendMessegeOnEnter: KeyboardEventHandler<HTMLInputElement> = (
+    event
+  ) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if (!newMessege) return;
+      addMessegeToDbAndUpdateLastSeen();
+    }
+  };
+
+  const sendMessegeClick: MouseEventHandler<HTMLButtonElement> = (event) => {
+    console.log({ event, newMessege });
+    event.preventDefault();
+    if (!newMessege) return;
+    addMessegeToDbAndUpdateLastSeen();
+  };
+  console.log("new messeg", newMessege);
   console.log("srcenmess", messegeSnapshot);
   return (
     <>
@@ -76,6 +148,20 @@ const ConversationSrceen = ({
           </div>
         </div>
         <div className="main-chat-box">{showMessege()}</div>
+        <StyledInputContainer>
+          <InsertEmoticonIcon></InsertEmoticonIcon>
+          <StyledInput
+            value={newMessege}
+            onChange={(e) => setNewMessege(e.target.value)}
+            onKeyDown={sendMessegeOnEnter}
+          ></StyledInput>
+          <IconButton onClick={sendMessegeClick} disabled={!newMessege}>
+            <SendIcon></SendIcon>
+          </IconButton>
+          <IconButton>
+            <KeyboardVoiceIcon></KeyboardVoiceIcon>
+          </IconButton>
+        </StyledInputContainer>
       </div>
     </>
   );

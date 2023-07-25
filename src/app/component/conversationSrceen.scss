@@ -1,5 +1,4 @@
 .header {
-  position: sticky;
   background-color: white;
   z-index: 100;
   top: 0;
@@ -13,6 +12,7 @@
     gap: 5px;
     justify-content: space-between;
     padding: 10px;
+    position: sticky;
   }
 }
 .box-chat div:first-child {
@@ -26,7 +26,8 @@
 .main-chat-box {
   background-color: #e5ded8;
   padding: 30px;
-  min-height: 90vh;
+  height: 70vh;
+  overflow-y: scroll;
 }
 span {
   color: gray;

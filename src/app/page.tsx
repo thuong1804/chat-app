@@ -32,6 +32,8 @@ export default function Home({ pageProps }: AppProps) {
     }
   }, [loggerInUser]);
 
+  console.log({ loggerInUser });
+
   if (loading) {
     return <Loading></Loading>;
   }

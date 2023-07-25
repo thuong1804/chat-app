@@ -1,5 +1,6 @@
-import { auth, db } from "@/app/config/firebase";
+import { app, db } from "@/app/config/firebase";
 import { Conversation } from "../../types/type";
+import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, getDoc, getDocs } from "firebase/firestore";
 import SideBar from "@/app/component/sidebar";
 import "../../conversation/conversation.scss";
@@ -9,6 +10,12 @@ import {
   transformMessege,
 } from "@/app/ultils/generateQueryGetMessages";
 import ConversationSrceen from "@/app/component/ConversationSrceen";
+import { getAuth } from "firebase/auth";
+
+const authen = getAuth(app);
+
+console.log({ authen });
+
 async function getData(id: string) {
   const conversationRef = doc(db, "conversation", id as string);
   const conversationSnapshot = await getDoc(conversationRef);
