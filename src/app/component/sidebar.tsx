@@ -19,6 +19,7 @@ import * as EmailValidator from "email-validator";
 import { addDoc, collection, query, where } from "firebase/firestore";
 import { Conversation } from "@/app/types/type";
 import ConversationSelect from "./ConversationSelect";
+import { useRouter } from "next/navigation";
 
 const StyleContainer = styled.div`
   height: 100vh;
@@ -79,13 +80,14 @@ const SideBar = () => {
   const [loggerInUser, _loading, _error] = useAuthState(auth);
   const [openNewConversation, setOpenNewConversation] = useState(false);
   const [textInputEmail, setTextInputEmail] = useState("");
-
+  const router = useRouter();
   const logOut = async () => {
     try {
       await signOut(auth);
     } catch (error) {
       console.log("error", error);
     }
+    return router.push("/");
   };
   const handleClickOpen = () => {
     setOpenNewConversation(!openNewConversation);

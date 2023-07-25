@@ -6,6 +6,7 @@ import { getRecipientEmail } from "@/app/ultils/getRecipientEmail";
 import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import SideBar from "@/app/component/sidebar";
+import { AuthContextProvider } from "@/app/context/AuthContext";
 
 export function Page({ params: { id } }: any) {
   const [conversation, setConversation] = useState<any>();
@@ -28,12 +29,12 @@ export function Page({ params: { id } }: any) {
   }, [id]);
 
   return (
-    <div>
+    <AuthContextProvider>
       <SideBar></SideBar>
       {conversation &&
         loggedInUser &&
         getRecipientEmail(conversation?.user, loggedInUser)}
-    </div>
+    </AuthContextProvider>
   );
   // return {
   //   props: {

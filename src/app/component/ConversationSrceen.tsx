@@ -28,6 +28,7 @@ import {
   serverTimestamp,
   setDoc,
 } from "firebase/firestore";
+import { AuthContextProvider } from "../context/AuthContext";
 
 const StyledInputContainer = styled.div`
   display: flex;
@@ -69,14 +70,14 @@ const ConversationSrceen = ({
     useCollection(queryMessege);
   //neu giao dien loading messege truoc thi return messege tu ssr {from [id].tsx}
   const showMessege = () => {
-    if (!messegeLoading) {
+    if (messegeLoading) {
       return conversationmessege.map((messege) => (
         <Messege key={messege.id} messege={messege}></Messege>
       ));
     }
 
     if (messegeSnapshot) {
-      messegeSnapshot.docs.map((messege) => (
+      return messegeSnapshot.docs.map((messege) => (
         <Messege key={messege.id} messege={transformMessege(messege)}></Messege>
       ));
     }
@@ -121,7 +122,7 @@ const ConversationSrceen = ({
   console.log("new messeg", newMessege);
   console.log("srcenmess", messegeSnapshot);
   return (
-    <>
+    <AuthContextProvider>
       <div className="header">
         <div className="box-chat">
           <div>
@@ -163,7 +164,7 @@ const ConversationSrceen = ({
           </IconButton>
         </StyledInputContainer>
       </div>
-    </>
+    </AuthContextProvider>
   );
 };
 export default ConversationSrceen;

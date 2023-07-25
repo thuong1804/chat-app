@@ -9,44 +9,50 @@ import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { AppProps } from "next/app";
 import Conversation from "./conversation/[id]/page";
 import Link from "next/link";
-export default function Home({ pageProps }: AppProps) {
-  const [loggerInUser, loading, _error] = useAuthState(auth);
-  useEffect(() => {
-    const setUserinDB = async () => {
-      try {
-        await setDoc(
-          doc(db, "user", loggerInUser?.email as string),
-          {
-            email: loggerInUser?.email,
-            lastSeen: serverTimestamp(),
-            photoURL: loggerInUser?.photoURL,
-          },
-          { merge: true } // xem database  co key email === email login thi ghi de lan login ban dau`
-        );
-      } catch (error) {
-        console.log("error", error);
-      }
-    };
-    if (loggerInUser) {
-      setUserinDB();
-    }
-  }, [loggerInUser]);
 
-  console.log({ loggerInUser });
+import { useRouter } from "next/navigation";
+import Home from "./component/home";
+import { AuthContext, AuthContextProvider } from "./context/AuthContext";
+export default function Page({ children }: any) {
+  // const [loggerInUser, loading, _error] = useAuthState(auth);
+  // const router = useRouter();
+  // useEffect(() => {
+  //   const setUserinDB = async () => {
+  //     try {
+  //       await setDoc(
+  //         doc(db, "user", loggerInUser?.email as string),
+  //         {
+  //           email: loggerInUser?.email,
+  //           lastSeen: serverTimestamp(),
+  //           photoURL: loggerInUser?.photoURL,
+  //         },
+  //         { merge: true } // xem database  co key email === email login thi ghi de lan login ban dau`
+  //       );
+  //     } catch (error) {
+  //       console.log("error", error);
+  //     }
+  //   };
+  //   if (loggerInUser) {
+  //     setUserinDB();
+  //   }
+  // }, [loggerInUser]);
 
-  if (loading) {
-    return <Loading></Loading>;
-  }
+  // console.log({ loggerInUser });
 
-  if (!loggerInUser) {
-    return <Login></Login>;
-  }
-  // if (loggerInUser) {
-  //   <Conversation></Conversation>;
+  // if (loading) {
+  //   return <Loading></Loading>;
   // }
+
+  // if (!loggerInUser) {
+  //   return router.push("/login");
+  // }
+
   return (
     <>
-      <SideBar {...pageProps}></SideBar>
+      <AuthContextProvider>
+        <Home />
+      </AuthContextProvider>
+      {/* <Home></Home> */}
     </>
   );
 }

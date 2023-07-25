@@ -31,10 +31,16 @@ const Login = () => {
   const router = useRouter();
   const [signInWithGoogle, _user, _loading, _error] = useSignInWithGoogle(auth);
 
-  const handelSignInGoogle = () => {
-    // router.push("/component");
-    signInWithGoogle();
+  const handelSignInGoogle = async (event: any) => {
+    event.preventDefault();
+    await signInWithGoogle();
+    if (_error) {
+      console.log(_error);
+    }
+    console.log(_user);
+    return router.push("/component/");
   };
+
   return (
     <StyleContainer>
       <Head>
@@ -43,10 +49,14 @@ const Login = () => {
       <StyleLoginContainer>
         <StyleImageWrapper>
           <Image
+            onClick={() => {
+              return router.push("/");
+            }}
             src={WhatsAppLogo}
             width={200}
             height={200}
             alt="WhatsAppLogo"
+            style={{ cursor: "pointer" }}
           ></Image>
         </StyleImageWrapper>
         <Button variant="outlined" onClick={handelSignInGoogle}>

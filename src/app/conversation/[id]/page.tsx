@@ -11,10 +11,7 @@ import {
 } from "@/app/ultils/generateQueryGetMessages";
 import ConversationSrceen from "@/app/component/ConversationSrceen";
 import { getAuth } from "firebase/auth";
-
-const authen = getAuth(app);
-
-console.log({ authen });
+import { AuthContextProvider } from "@/app/context/AuthContext";
 
 async function getData(id: string) {
   const conversationRef = doc(db, "conversation", id as string);
@@ -25,7 +22,6 @@ async function getData(id: string) {
   const messege = messegeSnapshot.docs.map((messegeDoc) =>
     transformMessege(messegeDoc)
   );
-  console.log("meseng", messegeSnapshot.docs[0].data());
   return {
     props: {
       conversation: conversationSnapshot.data() as Conversation,
@@ -40,14 +36,16 @@ export default async function Page(props: any) {
   const dataMapping = data.props.conversation;
   const messMapping = data.props.messege;
   return (
-    <div className="container-box-chat">
-      <div className="name-box-chat">
-        <SideBar></SideBar>
-        <ConversationSrceen
-          conversation={dataMapping}
-          conversationmessege={messMapping}
-        ></ConversationSrceen>
+    <AuthContextProvider>
+      <div className="container-box-chat">
+        <div className="name-box-chat">
+          <SideBar></SideBar>
+          <ConversationSrceen
+            conversation={dataMapping}
+            conversationmessege={messMapping}
+          ></ConversationSrceen>
+        </div>
       </div>
-    </div>
+    </AuthContextProvider>
   );
 }
