@@ -34,6 +34,7 @@ const StyledTitle = styled.h1`
   flex-direction: column;
 `;
 const StyleButtonLogin = styled.button`
+  position: relative;
   font-size: 1.5rem;
   width: 200px;
   height: 50px;
@@ -42,6 +43,7 @@ const StyleButtonLogin = styled.button`
   color: white;
   border: none;
   font-weight: bold;
+  transition: color 1s linear;
   &:hover {
     background-color: whitesmoke;
     color: green;
@@ -52,6 +54,15 @@ const StyledFooter = styled.div``;
 const StyledHeaderTitle = styled.h2`
   color: white;
   font-weight: bold;
+`;
+const StyledHoverName = styled.span`
+  color: green;
+  font-size: 5rem;
+  transition: transform 0.5s;
+
+  &:hover {
+    transform: translateX(30px);
+  }
 `;
 const Home = () => {
   const router = useRouter();
@@ -71,7 +82,7 @@ const Home = () => {
             gap: "5px",
           }}
         >
-          Log In
+          Sign In
           <LoginIcon style={{ color: "white", cursor: "pointer" }}></LoginIcon>
         </IconButton>
       </StyledHeader>
@@ -89,8 +100,7 @@ const Home = () => {
           }}
         ></Image>
         <StyledTitle>
-          WELCOME TO{" "}
-          <span style={{ color: "green", fontSize: "5rem" }}>CHATTER!</span>
+          WELCOME TO <StyledHoverName>CHATTER!</StyledHoverName>
           <StyleButtonLogin onClick={routerLogin}>
             Start Chatting
           </StyleButtonLogin>

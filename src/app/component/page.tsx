@@ -1,11 +1,11 @@
-// import { AuthContextProvider } from "../context/AuthContext";
-// import SideBar from "./sidebar";
+import { AuthContextProvider } from "../context/AuthContext";
+import SideBar from "./sidebar";
 
-// const PageComponent = () => {
-//   return (
-//     <AuthContextProvider>
-//       <SideBar></SideBar>
-//     </AuthContextProvider>
-//   );
-// };
-// export default PageComponent;
+const PageComponent = () => {
+  return (
+    <>
+      <SideBar></SideBar>;
+    </>
+  );
+};
+export default PageComponent;

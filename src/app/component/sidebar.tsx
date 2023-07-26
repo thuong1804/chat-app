@@ -1,5 +1,5 @@
 "use client";
-import { Avatar, Button, IconButton, TextField, Tooltip } from "@mui/material";
+import { Avatar, IconButton, TextField, Tooltip } from "@mui/material";
 import ChatIcon from "@mui/icons-material/Chat";
 import MoreVerTicalIcon from "@mui/icons-material/MoreVert";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -10,17 +10,19 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import styled from "styled-components";
-import { signOut } from "firebase/auth";
 import { auth, db } from "../config/firebase";
 import { useState } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
+import { useAuthState, useSignOut } from "react-firebase-hooks/auth";
 import { useCollection } from "react-firebase-hooks/firestore";
 import * as EmailValidator from "email-validator";
 import { addDoc, collection, query, where } from "firebase/firestore";
 import { Conversation } from "@/app/types/type";
 import ConversationSelect from "./ConversationSelect";
+import Loading from "./login-loading";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
+import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/navigation";
-
 const StyleContainer = styled.div`
   height: 100vh;
   min-width: 300px;
@@ -69,24 +71,40 @@ const StyleInputSearch = styled.input`
   flex: 1;
 `;
 
-const StyleSideBarButton = styled(Button)`
+const StyleSideBarButton = styled.button`
+  position: relative;
   width: 100%;
-  border-bottom: 1px solid whitesmoke;
-  color: blue;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  border-radius: 10px;
+  color: green;
+  font-weight: bold;
+  transition: color 1s linear;
+  &:hover {
+    background-color: green;
+    color: whitesmoke;
+  }
+`;
+const StyledNameLogOut = styled.span`
+  font-size: 1.6rem;
   font-weight: bold;
 `;
-
 const SideBar = () => {
   const [loggerInUser, _loading, _error] = useAuthState(auth);
   const [openNewConversation, setOpenNewConversation] = useState(false);
+  const [show, setShow] = useState(false);
+  const [signOut, loading, error] = useSignOut(auth);
   const [textInputEmail, setTextInputEmail] = useState("");
   const router = useRouter();
+  const handleCloseModal = () => setShow(false);
+  const handleShowModal = () => setShow(true);
   const logOut = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.log("error", error);
-    }
+    await signOut();
+    if (loading) return <Loading></Loading>;
+    handleCloseModal();
     return router.push("/");
   };
   const handleClickOpen = () => {
@@ -133,63 +151,92 @@ const SideBar = () => {
     setTextInputEmail(e.target.value);
   };
   return (
-    <StyleContainer>
-      <StyleHeader>
-        <Tooltip title={loggerInUser?.email} placement="right">
-          <StyleAvatar src={loggerInUser?.photoURL || ""}></StyleAvatar>
-        </Tooltip>
-        <div>
-          <IconButton>
-            <ChatIcon></ChatIcon>
-          </IconButton>
-          <IconButton>
-            <MoreVerTicalIcon></MoreVerTicalIcon>
-          </IconButton>
-          <IconButton onClick={logOut}>
-            <LogoutIcon></LogoutIcon>
-          </IconButton>
-        </div>
-      </StyleHeader>
-      <StyleSearch>
-        <SearchIcon></SearchIcon>
-        <StyleInputSearch placeholder="Search in convertion"></StyleInputSearch>
-      </StyleSearch>
-      <StyleSideBarButton onClick={handleClickOpen}>
-        Start New Conversation
-      </StyleSideBarButton>
-      {conversationSnapshot?.docs.map((conversation) => (
-        <ConversationSelect
-          key={conversation.id}
-          id={conversation.id}
-          conversationUser={(conversation.data() as Conversation).user}
-        />
-      ))}
-      <Dialog open={openNewConversation} onClose={handleClose}>
-        <DialogTitle>New Conversation</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Please enter a Google email address for the user you wish chat with
-          </DialogContentText>
-          <TextField
-            autoFocus
-            margin="dense"
-            id="name"
-            label="Email Address"
-            type="email"
-            fullWidth
-            variant="standard"
-            onChange={handelTextEmail}
-            value={textInputEmail}
+    <>
+      <StyleContainer>
+        <StyleHeader>
+          <Tooltip title={loggerInUser?.email} placement="right">
+            <StyleAvatar src={loggerInUser?.photoURL || ""}></StyleAvatar>
+          </Tooltip>
+          <div>
+            <IconButton>
+              <ChatIcon></ChatIcon>
+            </IconButton>
+            <IconButton>
+              <MoreVerTicalIcon></MoreVerTicalIcon>
+            </IconButton>
+            <IconButton onClick={handleShowModal}>
+              <LogoutIcon></LogoutIcon>
+            </IconButton>
+          </div>
+        </StyleHeader>
+        <StyleSearch>
+          <SearchIcon></SearchIcon>
+          <StyleInputSearch placeholder="Search in convertion"></StyleInputSearch>
+        </StyleSearch>
+        <StyleSideBarButton onClick={handleClickOpen}>
+          Start New Conversation
+        </StyleSideBarButton>
+        {conversationSnapshot?.docs.map((conversation) => (
+          <ConversationSelect
+            key={conversation.id}
+            id={conversation.id}
+            conversationUser={(conversation.data() as Conversation).user}
           />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button disabled={!textInputEmail} onClick={handleCreateConversation}>
-            Create
+        ))}
+        <Dialog open={openNewConversation} onClose={handleClose}>
+          <DialogTitle>New Conversation</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Please enter a Google email address for the user you wish chat
+              with
+            </DialogContentText>
+            <TextField
+              autoFocus
+              margin="dense"
+              id="name"
+              label="Email Address"
+              type="email"
+              fullWidth
+              variant="standard"
+              onChange={handelTextEmail}
+              value={textInputEmail}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Cancel</Button>
+            <Button
+              disabled={!textInputEmail}
+              onClick={handleCreateConversation}
+            >
+              Create
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </StyleContainer>
+
+      <Modal
+        show={show}
+        onHide={handleCloseModal}
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Sign Out</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Hi <StyledNameLogOut>{loggerInUser?.displayName}</StyledNameLogOut> !
+          Do you want to sign out of Chatter?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            Close
           </Button>
-        </DialogActions>
-      </Dialog>
-    </StyleContainer>
+          <Button variant="primary" onClick={logOut}>
+            Sure
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 };
 export default SideBar;

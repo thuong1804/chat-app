@@ -29,6 +29,8 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { AuthContextProvider } from "../context/AuthContext";
+import Home from "./home";
+// import { AuthContextProvider } from "../context/AuthContext";
 
 const StyledInputContainer = styled.div`
   display: flex;
@@ -122,7 +124,7 @@ const ConversationSrceen = ({
   console.log("new messeg", newMessege);
   console.log("srcenmess", messegeSnapshot);
   return (
-    <AuthContextProvider>
+    <>
       <div className="header">
         <div className="box-chat">
           <div>
@@ -164,7 +166,7 @@ const ConversationSrceen = ({
           </IconButton>
         </StyledInputContainer>
       </div>
-    </AuthContextProvider>
+    </>
   );
 };
 export default ConversationSrceen;

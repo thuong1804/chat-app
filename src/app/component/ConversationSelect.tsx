@@ -3,8 +3,6 @@ import { Conversation } from "../types/type";
 import styled from "styled-components";
 import RecipientAvatar from "../component/recipientAvatar";
 import { useRouter } from "next/navigation";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../config/firebase";
 
 const StyledContainer = styled.div`
   display: flex;
@@ -26,7 +24,6 @@ const ConversationSelect = ({
   id: string;
   conversationUser: Conversation["user"];
 }) => {
-  const [loggerInUser, _loading, _error] = useAuthState(auth);
   const { recipient, recipientEmail } = useRecipient(conversationUser);
   const router = useRouter();
   const onSelectConversation = () => {
@@ -34,13 +31,15 @@ const ConversationSelect = ({
   };
 
   return (
-    <StyledContainer onClick={onSelectConversation}>
-      <RecipientAvatar
-        recipient={recipient}
-        recipientEmail={recipientEmail}
-      ></RecipientAvatar>
-      <span>{recipientEmail}</span>
-    </StyledContainer>
+    <>
+      <StyledContainer onClick={onSelectConversation}>
+        <RecipientAvatar
+          recipient={recipient}
+          recipientEmail={recipientEmail}
+        ></RecipientAvatar>
+        <span>{recipientEmail}</span>
+      </StyledContainer>
+    </>
   );
 };
 export default ConversationSelect;

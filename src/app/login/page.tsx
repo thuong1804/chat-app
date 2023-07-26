@@ -4,9 +4,19 @@ import Head from "next/head";
 import styled from "styled-components";
 import Image from "next/image";
 import WhatsAppLogo from "../acsset/WhatsApp.svg.webp";
-import { useSignInWithGoogle } from "react-firebase-hooks/auth";
-import { auth } from "../config/firebase";
+import {
+  useSignInWithFacebook,
+  useSignInWithGithub,
+  useSignInWithGoogle,
+} from "react-firebase-hooks/auth";
+import { auth, provider } from "../config/firebase";
 import { useRouter } from "next/navigation";
+import Loading from "../component/login-loading";
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+} from "firebase/auth";
 
 const StyleContainer = styled.div`
   height: 100vh;
@@ -30,14 +40,25 @@ const StyleImageWrapper = styled.div`
 const Login = () => {
   const router = useRouter();
   const [signInWithGoogle, _user, _loading, _error] = useSignInWithGoogle(auth);
-
   const handelSignInGoogle = async (event: any) => {
     event.preventDefault();
-    await signInWithGoogle();
+    // await signInWithGoogle();
+    const provider = new GoogleAuthProvider();
+    // select account
+    provider.setCustomParameters({
+      prompt: "select_account",
+    });
+    await signInWithPopup(auth, provider)
+      .then((result) => {
+        console.log("Logged In", result);
+      })
+      .catch((_error) => {
+        console.log("Caught error Popup closed", _error);
+      });
+
     if (_error) {
-      console.log(_error);
+      return console.log(_error);
     }
-    console.log(_user);
     return router.push("/component/");
   };
 
