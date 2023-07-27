@@ -11,6 +11,8 @@ const StyledContainer = styled.div`
   padding: 15px;
   gap: 10px;
   word-break: break-all;
+  color: gray;
+  font-size: 0.8rem;
 
   &:hover {
     background-color: #e9eaeb;

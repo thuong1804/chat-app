@@ -1,4 +1,14 @@
 "use client";
+import * as firebase from "firebase/app";
+import {
+  addDoc,
+  collection,
+  getDocs,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
 import { Avatar, IconButton, TextField, Tooltip } from "@mui/material";
 import ChatIcon from "@mui/icons-material/Chat";
 import MoreVerTicalIcon from "@mui/icons-material/MoreVert";
@@ -11,11 +21,11 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import styled from "styled-components";
 import { auth, db } from "../config/firebase";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuthState, useSignOut } from "react-firebase-hooks/auth";
 import { useCollection } from "react-firebase-hooks/firestore";
 import * as EmailValidator from "email-validator";
-import { addDoc, collection, query, where } from "firebase/firestore";
+
 import { Conversation } from "@/app/types/type";
 import ConversationSelect from "./ConversationSelect";
 import Loading from "./login-loading";
@@ -24,12 +34,12 @@ import Modal from "react-bootstrap/Modal";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/navigation";
 const StyleContainer = styled.div`
-  height: 100vh;
+  height: 90vh;
   min-width: 300px;
   max-width: 350px;
   overflow-y: scroll;
   border-right: 1px solid whitesmoke;
-
+  padding: 15px;
   /* Hide scrollbar for Chrome, Safari and Opera */
   &::-webkit-scrollbar {
     display: none;
@@ -45,7 +55,8 @@ const StyleHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   position: sticky;
-  background-color: white;
+  background-color: whitesmoke;
+  border-radius: 10px;
   padding: 10px;
   border-bottom: 1px solid whitesmoke;
   top: 0;
@@ -80,17 +91,22 @@ const StyleSideBarButton = styled.button`
   align-items: center;
   border: none;
   border-radius: 10px;
-  color: green;
+  color: rgb(97 140 230);
   font-weight: bold;
   transition: color 1s linear;
   &:hover {
-    background-color: green;
+    background-color: rgb(97 140 230);
     color: whitesmoke;
   }
 `;
 const StyledNameLogOut = styled.span`
   font-size: 1.6rem;
   font-weight: bold;
+`;
+const StyledBoxConversation = styled.div`
+  background-color: whitesmoke;
+  margin-top: 20px;
+  border-radius: 10px;
 `;
 const SideBar = () => {
   const [loggerInUser, _loading, _error] = useAuthState(auth);
@@ -101,6 +117,42 @@ const SideBar = () => {
   const router = useRouter();
   const handleCloseModal = () => setShow(false);
   const handleShowModal = () => setShow(true);
+
+  const [inputSearch, setInputSearch] = useState("");
+  // const [data, setData] = useState<any[]>([]);
+  // const [filteredContacts, setFilteredContacts] = useState<any[]>([]);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const q = query(collection(db, "conversation"));
+  //     const doc_refs = await getDocs(q);
+  //     console.log(q);
+  //     const res: any[] = [];
+  //     doc_refs.forEach((item) => {
+  //       res.push({
+  //         id: item.id,
+  //         ...item.data(),
+  //       });
+  //     });
+  //     console.log(doc_refs.docs);
+  //     console.log("textinput", inputSearch);
+  //     setData(res);
+  //   };
+  //   fetchData();
+  // }, []);
+
+  // useEffect(() => {
+  //   setFilteredContacts(
+  //     data.filter((item: any) => {
+  //       return item.emailRecipient
+  //         .toLowerCase()
+  //         .includes(inputSearch.toLowerCase());
+  //     })
+  //   );
+  // }, [inputSearch, data]);
+
+  // console.log("data", data);
+  // console.log("filter", filteredContacts);
+
   const logOut = async () => {
     await signOut();
     if (loading) return <Loading></Loading>;
@@ -143,6 +195,7 @@ const SideBar = () => {
       //add vao db conversation
       await addDoc(collection(db, "conversation"), {
         user: [loggerInUser?.email, textInputEmail],
+        emailRecipient: textInputEmail,
       });
     }
     handleClose();
@@ -150,6 +203,15 @@ const SideBar = () => {
   const handelTextEmail = (e: any) => {
     setTextInputEmail(e.target.value);
   };
+
+  const conversationSnapshotFilterd = conversationSnapshot?.docs?.filter(
+    (con: any) =>
+      con
+        .data()
+        .emailRecipient.toLowerCase()
+        .includes(inputSearch.toLowerCase())
+  );
+
   return (
     <>
       <StyleContainer>
@@ -171,18 +233,26 @@ const SideBar = () => {
         </StyleHeader>
         <StyleSearch>
           <SearchIcon></SearchIcon>
-          <StyleInputSearch placeholder="Search in convertion"></StyleInputSearch>
+          <StyleInputSearch
+            value={inputSearch}
+            id="user"
+            placeholder="Search in convertion"
+            onChange={(e) => setInputSearch(e.target.value)}
+          ></StyleInputSearch>
         </StyleSearch>
         <StyleSideBarButton onClick={handleClickOpen}>
           Start New Conversation
         </StyleSideBarButton>
-        {conversationSnapshot?.docs.map((conversation) => (
-          <ConversationSelect
-            key={conversation.id}
-            id={conversation.id}
-            conversationUser={(conversation.data() as Conversation).user}
-          />
-        ))}
+        <StyledBoxConversation>
+          {conversationSnapshotFilterd?.map((conversation) => (
+            <ConversationSelect
+              key={conversation.id}
+              id={conversation.id}
+              conversationUser={(conversation.data() as Conversation).user}
+            />
+          ))}
+        </StyledBoxConversation>
+
         <Dialog open={openNewConversation} onClose={handleClose}>
           <DialogTitle>New Conversation</DialogTitle>
           <DialogContent>
@@ -213,7 +283,6 @@ const SideBar = () => {
           </DialogActions>
         </Dialog>
       </StyleContainer>
-
       <Modal
         show={show}
         onHide={handleCloseModal}
