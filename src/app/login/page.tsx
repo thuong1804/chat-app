@@ -2,9 +2,7 @@
 import { Button } from "@mui/material";
 import Head from "next/head";
 import styled from "styled-components";
-import Image from "next/image";
-import img_login from "../acsset/img_login.png";
-import WhatsAppLogo from "../acsset/WhatsApp.svg.webp";
+import Slide from "../component/Slide";
 import {
   useSignInWithFacebook,
   useSignInWithGithub,
@@ -21,23 +19,21 @@ import {
 
 const StyleContainer = styled.div`
   height: 100vh;
-  display: grid;
-  place-items: center;
+  display: flex;
+  justify-content: center;
+
   background-color: #6534d9;
 `;
 const StyleLoginContainer = styled.div`
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 8 0/1);
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  background-color: white;
-  border-radius: 15px;
-  padding: 100px;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 8 0/1);
-  width: 70%;
-  height: 50%;
+  justify-content: center;
 `;
 const StyleImageWrapper = styled.div`
-  width: 90%;
+  width: 50%;
 `;
 const StyledButtonLogin = styled.button`
   width: 200px;
@@ -88,21 +84,9 @@ const Login = () => {
       </Head>
       <StyleLoginContainer>
         <StyleImageWrapper>
-          <Image
-            onClick={() => {
-              return router.push("/");
-            }}
-            src={img_login}
-            quality={100}
-            alt="bg"
-            priority={true}
-            style={{
-              objectFit: "contain",
-              width: "80%",
-              height: "80%",
-            }}
-          ></Image>
+          <Slide></Slide>
         </StyleImageWrapper>
+
         <StyledButtonLogin onClick={handelSignInGoogle}>
           Sign In With Google
         </StyledButtonLogin>

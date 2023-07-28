@@ -15,7 +15,7 @@ const StyledMessege = styled.div`
 `;
 const StyledsenderMessege = styled(StyledMessege)`
   margin-left: auto;
-  background-color: #dcf8c6;
+  background-color: #c7ac95;
 `;
 const StyledReceiveMessege = styled(StyledMessege)`
   background-color: whitesmoke;
