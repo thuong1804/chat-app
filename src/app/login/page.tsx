@@ -2,6 +2,7 @@
 import { Button } from "@mui/material";
 import Head from "next/head";
 import styled from "styled-components";
+import Image from "next/image";
 import Slide from "../component/Slide";
 import {
   useSignInWithFacebook,
@@ -10,6 +11,7 @@ import {
 } from "react-firebase-hooks/auth";
 import { auth, provider } from "../config/firebase";
 import { useRouter } from "next/navigation";
+import iconGG from "../acsset/icongg.webp";
 import Loading from "../component/login-loading";
 import {
   GoogleAuthProvider,
@@ -38,9 +40,11 @@ const StyleImageWrapper = styled.div`
 const StyledButtonLogin = styled.button`
   width: 200px;
   height: 70px;
-  background-color: #2962ff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   border: none;
-  color: whitesmoke;
+  color: #fd8c73;
   font-size: 1rem;
   font-weight: bold;
   border-radius: 15px;
@@ -51,7 +55,22 @@ const StyledButtonLogin = styled.button`
     color: #2962ff;
   }
 `;
+const StyledTitle = styled.h1`
+  position: absolute;
+  left: 0;
+  color: whitesmoke;
+  margin-left: 10px;
+  padding: 10px;
+  font-weight: bold;
+  transition: color 1.5s linear;
 
+  &:hover {
+    cursor: pointer;
+    color: #2962ff;
+    background-color: whitesmoke;
+    border-radius: 15px;
+  }
+`;
 const Login = () => {
   const router = useRouter();
   const [signInWithGoogle, _user, _loading, _error] = useSignInWithGoogle(auth);
@@ -66,6 +85,7 @@ const Login = () => {
     await signInWithPopup(auth, provider)
       .then((result) => {
         console.log("Logged In", result);
+        return router.push("/component/");
       })
       .catch((_error) => {
         console.log("Caught error Popup closed", _error);
@@ -74,20 +94,22 @@ const Login = () => {
     if (_error) {
       return console.log(_error);
     }
-    return router.push("/component/");
   };
 
   return (
     <StyleContainer>
-      <Head>
-        <title>Login</title>
-      </Head>
+      <StyledTitle onClick={() => router.push("/")}>Chatter!</StyledTitle>
       <StyleLoginContainer>
         <StyleImageWrapper>
           <Slide></Slide>
         </StyleImageWrapper>
 
         <StyledButtonLogin onClick={handelSignInGoogle}>
+          <Image
+            src={iconGG}
+            alt="icongg"
+            style={{ width: "20px", height: "20px" }}
+          ></Image>
           Sign In With Google
         </StyledButtonLogin>
       </StyleLoginContainer>
