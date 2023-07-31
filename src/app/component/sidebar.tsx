@@ -3,6 +3,8 @@ import * as firebase from "firebase/app";
 import {
   addDoc,
   collection,
+  deleteDoc,
+  doc,
   getDocs,
   onSnapshot,
   orderBy,
@@ -25,7 +27,7 @@ import { useEffect, useState } from "react";
 import { useAuthState, useSignOut } from "react-firebase-hooks/auth";
 import { useCollection } from "react-firebase-hooks/firestore";
 import * as EmailValidator from "email-validator";
-
+import DropdownButton from "react-bootstrap/DropdownButton";
 import { Conversation } from "@/app/types/type";
 import ConversationSelect from "./ConversationSelect";
 import Loading from "./login-loading";
@@ -33,6 +35,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/navigation";
+import { Dropdown } from "react-bootstrap";
 const StyleContainer = styled.div`
   height: 90vh;
   min-width: 300px;
@@ -81,7 +84,12 @@ const StyleInputSearch = styled.input`
   border: none;
   flex: 1;
 `;
-
+const StyledContainerConversationButton = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 5px;
+`;
 const StyleSideBarButton = styled.button`
   position: relative;
   width: 100%;
@@ -198,6 +206,7 @@ const SideBar = () => {
         emailRecipient: textInputEmail,
       });
     }
+
     handleClose();
   };
   const handelTextEmail = (e: any) => {
@@ -211,7 +220,9 @@ const SideBar = () => {
         .emailRecipient.toLowerCase()
         .includes(inputSearch.toLowerCase())
   );
-
+  const handelDelete = async (id: any) => {
+    await deleteDoc(doc(db, "conversation", id));
+  };
   return (
     <>
       <StyleContainer>
@@ -245,11 +256,20 @@ const SideBar = () => {
         </StyleSideBarButton>
         <StyledBoxConversation>
           {conversationSnapshotFilterd?.map((conversation) => (
-            <ConversationSelect
-              key={conversation.id}
-              id={conversation.id}
-              conversationUser={(conversation.data() as Conversation).user}
-            />
+            <StyledContainerConversationButton key={conversation.id}>
+              <ConversationSelect
+                id={conversation.id}
+                conversationUser={(conversation.data() as Conversation).user}
+              />
+              <DropdownButton id="dropdown-item-button" title="" variant="none">
+                <Dropdown.Item
+                  as="button"
+                  onClick={() => handelDelete(conversation.id)}
+                >
+                  Delete Conversation
+                </Dropdown.Item>
+              </DropdownButton>
+            </StyledContainerConversationButton>
           ))}
         </StyledBoxConversation>
 

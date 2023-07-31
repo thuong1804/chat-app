@@ -18,6 +18,7 @@ import {
   signInWithPopup,
   signInWithRedirect,
 } from "firebase/auth";
+import { ToastContainer, toast } from "react-toastify";
 
 const StyleContainer = styled.div`
   height: 100vh;
@@ -85,6 +86,7 @@ const Login = () => {
     await signInWithPopup(auth, provider)
       .then((result) => {
         console.log("Logged In", result);
+        toast("loggin success");
         return router.push("/component/");
       })
       .catch((_error) => {
@@ -113,6 +115,18 @@ const Login = () => {
           Sign In With Google
         </StyledButtonLogin>
       </StyleLoginContainer>
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss={false}
+        draggable
+        pauseOnHover={false}
+        theme="light"
+      />
     </StyleContainer>
   );
 };
