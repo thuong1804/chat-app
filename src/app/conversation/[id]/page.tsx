@@ -47,7 +47,7 @@ export default async function Page(props: any) {
   );
 }
 
-export const RenderPage = ({ dataMapping, messMapping }: any) => {
+const RenderPage = ({ dataMapping, messMapping }: any) => {
   const [loggerInUser, loading, _error] = useAuthState(auth);
   const { push } = useRouter();
   console.log({ dataMapping });
