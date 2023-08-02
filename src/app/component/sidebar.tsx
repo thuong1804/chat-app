@@ -36,6 +36,7 @@ import Modal from "react-bootstrap/Modal";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/navigation";
 import { Dropdown } from "react-bootstrap";
+
 const StyleContainer = styled.div`
   height: 90vh;
   min-width: 300px;
@@ -122,6 +123,7 @@ const SideBar = () => {
   const [show, setShow] = useState(false);
   const [signOut, loading, error] = useSignOut(auth);
   const [textInputEmail, setTextInputEmail] = useState("");
+  const [showDelete, setShowDelete] = useState(false);
   const router = useRouter();
   const handleCloseModal = () => setShow(false);
   const handleShowModal = () => setShow(true);
@@ -171,6 +173,7 @@ const SideBar = () => {
     setOpenNewConversation(!openNewConversation);
     setTextInputEmail("");
   };
+
   // ham` kiem tra conversation da ton` tai khi nguoi dung dang nhap hay chua
   const queryGetConversationForCurrentUser = query(
     collection(db, "conversation"),
@@ -228,7 +231,10 @@ const SideBar = () => {
       <StyleContainer>
         <StyleHeader>
           <Tooltip title={loggerInUser?.email} placement="right">
-            <StyleAvatar src={loggerInUser?.photoURL || ""}></StyleAvatar>
+            <StyleAvatar
+              src={loggerInUser?.photoURL || ""}
+              onClick={() => router.push("/component")}
+            ></StyleAvatar>
           </Tooltip>
           <div>
             <IconButton>
@@ -264,11 +270,30 @@ const SideBar = () => {
               <DropdownButton id="dropdown-item-button" title="" variant="none">
                 <Dropdown.Item
                   as="button"
-                  onClick={() => handelDelete(conversation.id)}
+                  onClick={() => setShowDelete(!showDelete)}
                 >
                   Delete Conversation
                 </Dropdown.Item>
               </DropdownButton>
+              <Dialog
+                open={showDelete}
+                onClose={() => setShowDelete(!showDelete)}
+              >
+                <DialogTitle>Delete Conversation</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    Do you want to delete Conversation?
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setShowDelete(!showDelete)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={() => handelDelete(conversation.id)}>
+                    Delete
+                  </Button>
+                </DialogActions>
+              </Dialog>
             </StyledContainerConversationButton>
           ))}
         </StyledBoxConversation>
