@@ -236,6 +236,7 @@ const SideBar = () => {
   );
   const handelDelete = async (id: any) => {
     await deleteDoc(doc(db, "conversation", id));
+    setShowDelete(!showDelete);
   };
   return (
     <>
