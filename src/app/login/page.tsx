@@ -69,6 +69,7 @@ const StyledButtonLogin = styled.button`
   }
   @media (max-width: 46.1875em) {
     height: 40px;
+    font-size: 0.7rem;
   }
 `;
 const StyledTitle = styled.h1`

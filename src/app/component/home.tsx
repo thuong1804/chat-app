@@ -65,6 +65,9 @@ const StyleButtonLogin = styled.button`
     color: whitesmoke;
     cursor: pointer;
   }
+  @media (max-width: 46.1875em) {
+    font-size: 1rem;
+  }
 `;
 const StyledFooter = styled.div``;
 const StyledHeaderTitle = styled.h2`

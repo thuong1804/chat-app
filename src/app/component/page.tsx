@@ -4,8 +4,10 @@ import styled from "styled-components";
 
 const StyledContainer = styled.div`
   display: flex;
+
   @media (max-width: 46.1875em) {
     width: 100%;
+    display: block;
   }
 `;
 

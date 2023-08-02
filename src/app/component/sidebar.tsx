@@ -52,6 +52,12 @@ const StyleContainer = styled.div`
   /* Hide scrollbar for IE, Edge and Firefox */
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+
+  @media (max-width: 46.1875em) {
+    width: 100%;
+    border: none;
+    max-width: unset;
+  }
 `;
 
 const StyleHeader = styled.div`
@@ -116,6 +122,11 @@ const StyledBoxConversation = styled.div`
   background-color: whitesmoke;
   margin-top: 20px;
   border-radius: 10px;
+`;
+const StyledSetWidth = styled.div`
+  @media (max-width: 46.1875em) {
+    width: 100%;
+  }
 `;
 const SideBar = () => {
   const [loggerInUser, _loading, _error] = useAuthState(auth);
@@ -263,10 +274,13 @@ const SideBar = () => {
         <StyledBoxConversation>
           {conversationSnapshotFilterd?.map((conversation) => (
             <StyledContainerConversationButton key={conversation.id}>
-              <ConversationSelect
-                id={conversation.id}
-                conversationUser={(conversation.data() as Conversation).user}
-              />
+              <StyledSetWidth>
+                <ConversationSelect
+                  id={conversation.id}
+                  conversationUser={(conversation.data() as Conversation).user}
+                />
+              </StyledSetWidth>
+
               <DropdownButton id="dropdown-item-button" title="" variant="none">
                 <Dropdown.Item
                   as="button"
