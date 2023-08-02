@@ -3,6 +3,7 @@ import { Conversation } from "../types/type";
 import styled from "styled-components";
 import RecipientAvatar from "../component/recipientAvatar";
 import { useRouter } from "next/navigation";
+import useSwipe from "../customhook/useSwipe";
 
 const StyledContainer = styled.div`
   display: flex;
@@ -31,16 +32,24 @@ const ConversationSelect = ({
   const onSelectConversation = () => {
     router.push(`/conversation/${id}`);
   };
+  const swipeHandlers = useSwipe({
+    onSwipedLeft: () => router.push("/component"),
+    onSwipedRight: function (): void {
+      throw new Error("Function not implemented.");
+    },
+  });
 
   return (
     <>
-      <StyledContainer onClick={onSelectConversation}>
-        <RecipientAvatar
-          recipient={recipient}
-          recipientEmail={recipientEmail}
-        ></RecipientAvatar>
-        <span>{recipientEmail}</span>
-      </StyledContainer>
+      <div {...swipeHandlers}>
+        <StyledContainer onClick={onSelectConversation}>
+          <RecipientAvatar
+            recipient={recipient}
+            recipientEmail={recipientEmail}
+          ></RecipientAvatar>
+          <span>{recipientEmail}</span>
+        </StyledContainer>
+      </div>
     </>
   );
 };

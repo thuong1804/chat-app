@@ -34,9 +34,21 @@ const StyleLoginContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+
+  @media (max-width: 46.1875em) {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
 `;
 const StyleImageWrapper = styled.div`
   width: 50%;
+  @media (max-width: 46.1875em) {
+    padding-left: 23px;
+  }
 `;
 const StyledButtonLogin = styled.button`
   width: 200px;
@@ -54,6 +66,9 @@ const StyledButtonLogin = styled.button`
     cursor: pointer;
     background-color: whitesmoke;
     color: #2962ff;
+  }
+  @media (max-width: 46.1875em) {
+    height: 40px;
   }
 `;
 const StyledTitle = styled.h1`

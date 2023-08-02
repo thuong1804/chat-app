@@ -33,6 +33,9 @@ const StyledMain = styled.div`
   display: flex;
   justify-content: center;
   align-items: flex-end;
+  @media (max-width: 46.1875em) {
+    margin-top: 30px;
+  }
 `;
 const StyledTitle = styled.h1`
   font-weight: bold;
@@ -41,6 +44,10 @@ const StyledTitle = styled.h1`
   flex-direction: column;
   border-left: 10px solid #8d5e85;
   padding-left: 10px;
+
+  @media (max-width: 46.1875em) {
+    font-size: 1rem;
+  }
 `;
 const StyleButtonLogin = styled.button`
   position: relative;
@@ -68,6 +75,11 @@ const StyledHeaderTitle = styled.h2`
   &:hover {
     transform: translatey(30px);
   }
+  @media (max-width: 46.1875em) {
+    position: absolute;
+    left: 0;
+    padding-left: 5px;
+  }
 `;
 const StyledHoverName = styled.span`
   color: #292d31;
@@ -76,6 +88,9 @@ const StyledHoverName = styled.span`
 
   &:hover {
     transform: translateX(30px);
+  }
+  @media (max-width: 46.1875em) {
+    font-size: 3rem;
   }
 `;
 const Home = () => {
@@ -101,18 +116,6 @@ const Home = () => {
         </IconButton>
       </StyledHeader>
       <StyledMain>
-        {/* <Image
-          src={img_home}
-          quality={100}
-          sizes="100vw"
-          alt="bg"
-          priority={true}
-          style={{
-            objectFit: "contain",
-            width: "50%",
-            height: "70vh",
-          }}
-        ></Image> */}
         <StyledTitle>
           WELCOME TO <StyledHoverName>CHATTER!</StyledHoverName>
           <StyleButtonLogin onClick={routerLogin}>

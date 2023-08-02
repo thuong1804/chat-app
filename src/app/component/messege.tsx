@@ -28,6 +28,10 @@ const StyledTimestamp = styled.div`
   bottom: -15px;
   right: 0;
   text-align: right;
+  @media (max-width: 46.1875em) {
+    bottom: -18px;
+    font-size: 5px;
+  }
 `;
 
 const Messege = ({ messege }: { messege: Imessege }) => {

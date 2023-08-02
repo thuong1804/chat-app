@@ -50,6 +50,10 @@ const StyledInput = styled.input`
   padding: 15px;
   margin-left: 15px;
   margin-right: 15px;
+
+  @media (max-width: 46.1875em) {
+    padding: 0;
+  }
 `;
 
 const ConversationSrceen = ({

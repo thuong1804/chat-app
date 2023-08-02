@@ -60,7 +60,10 @@ const RenderPage = ({ dataMapping, messMapping }: any) => {
       {loggerInUser && (
         <div className="container-box-chat">
           <div className="name-box-chat">
-            <SideBar></SideBar>
+            <div className="side-bar-chat">
+              <SideBar></SideBar>
+            </div>
+
             <ConversationSrceen
               conversation={dataMapping}
               conversationmessege={messMapping}
