@@ -105,18 +105,6 @@ const Home = () => {
     <StyledContainer>
       <StyledHeader>
         <StyledHeaderTitle>CHATTER!</StyledHeaderTitle>
-
-        <IconButton
-          onClick={routerLogin}
-          style={{
-            color: "white",
-            display: "flex",
-            gap: "5px",
-          }}
-        >
-          Sign In
-          <LoginIcon style={{ color: "white", cursor: "pointer" }}></LoginIcon>
-        </IconButton>
       </StyledHeader>
       <StyledMain>
         <StyledTitle>

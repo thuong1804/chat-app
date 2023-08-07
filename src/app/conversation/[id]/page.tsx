@@ -1,4 +1,3 @@
-"use client";
 import { app, auth, db } from "@/app/config/firebase";
 import { Conversation } from "../../types/type";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -10,10 +9,8 @@ import {
   generateQueryGetMessages,
   transformMessege,
 } from "@/app/ultils/generateQueryGetMessages";
-import ConversationSrceen from "@/app/component/ConversationSrceen";
-import Home from "@/app/component/home";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import RenderPage from "./getside";
+
 async function getData(id: string) {
   const conversationRef = doc(db, "conversation", id as string);
   const conversationSnapshot = await getDoc(conversationRef);
@@ -47,30 +44,30 @@ export default async function Page(props: any) {
   );
 }
 
-const RenderPage = ({ dataMapping, messMapping }: any) => {
-  const [loggerInUser, loading, _error] = useAuthState(auth);
-  const { push } = useRouter();
-  console.log({ dataMapping });
-  useEffect(() => {
-    if (!loggerInUser) push("/");
-  }, []);
+// const RenderPage = ({ dataMapping, messMapping }: any) => {
+//   const [loggerInUser, loading, _error] = useAuthState(auth);
+//   const { push } = useRouter();
+//   console.log({ dataMapping });
+//   useEffect(() => {
+//     if (!loggerInUser) push("/");
+//   }, []);
 
-  return (
-    <>
-      {loggerInUser && (
-        <div className="container-box-chat">
-          <div className="name-box-chat">
-            <div className="side-bar-chat">
-              <SideBar></SideBar>
-            </div>
+//   return (
+//     <>
+//       {loggerInUser && (
+//         <div className="container-box-chat">
+//           <div className="name-box-chat">
+//             <div className="side-bar-chat">
+//               <SideBar></SideBar>
+//             </div>
 
-            <ConversationSrceen
-              conversation={dataMapping}
-              conversationmessege={messMapping}
-            ></ConversationSrceen>
-          </div>
-        </div>
-      )}
-    </>
-  );
-};
+//             <ConversationSrceen
+//               conversation={dataMapping}
+//               conversationmessege={messMapping}
+//             ></ConversationSrceen>
+//           </div>
+//         </div>
+//       )}
+//     </>
+//   );
+// };

@@ -1,6 +1,5 @@
 "use client";
-import { Button } from "@mui/material";
-import Head from "next/head";
+import { setCookie } from "cookies-next";
 import styled from "styled-components";
 import Image from "next/image";
 import Slide from "../component/Slide";
@@ -103,6 +102,7 @@ const Login = () => {
       .then((result) => {
         console.log("Logged In", result);
         toast("loggin success");
+        setCookie("loggin", "true");
         return router.push("/component/");
       })
       .catch((_error) => {

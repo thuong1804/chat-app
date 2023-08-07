@@ -1,7 +1,11 @@
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Imessege } from "../types/type";
-import { auth } from "../config/firebase";
+import { auth, db } from "../config/firebase";
 import { styled } from "styled-components";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import { Button, IconButton, Menu, MenuItem } from "@mui/material";
+import { useState } from "react";
+import { deleteDoc, doc } from "firebase/firestore";
 
 const StyledMessege = styled.div`
   width: fit-content;
@@ -33,18 +37,65 @@ const StyledTimestamp = styled.div`
     font-size: 5px;
   }
 `;
-
+const StyledDelete = styled.div`
+  width: 50px;
+  height: 50px;
+  background: #000;
+`;
 const Messege = ({ messege }: { messege: Imessege }) => {
   const [loggerInUser, _loading, _error] = useAuthState(auth);
+  const clickshowdelete = () => {
+    const styled = StyledDelete;
+    return styled;
+  };
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const clickdelete = async (id: any) => {
+    const docdb = await deleteDoc(doc(db, "messeges", id));
+    // console.log("docdb", docdb);
+    console.log(id);
+  };
   const MessegeType =
     loggerInUser?.email === messege.user
       ? StyledsenderMessege
       : StyledReceiveMessege;
   return (
-    <MessegeType>
-      {messege.text}
-      <StyledTimestamp>{messege.sent_at}</StyledTimestamp>
-    </MessegeType>
+    <div className="aa" style={{ display: "flex", alignItems: "center" }}>
+      <MessegeType>
+        {messege.text}
+        <StyledTimestamp>{messege.sent_at}</StyledTimestamp>
+      </MessegeType>
+      <Button
+        id="basic-button"
+        aria-controls={open ? "basic-menu" : undefined}
+        aria-haspopup="true"
+        aria-expanded={open ? "true" : undefined}
+        onClick={handleClick}
+        style={{ color: "gray" }}
+      >
+        <MoreHorizIcon />
+      </Button>
+      <Menu
+        id="basic-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        MenuListProps={{
+          "aria-labelledby": "basic-button",
+        }}
+      >
+        <MenuItem onClick={() => clickdelete(messege.id)}>
+          Message Recall
+        </MenuItem>
+      </Menu>
+    </div>
   );
 };
 export default Messege;

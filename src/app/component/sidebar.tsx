@@ -36,7 +36,7 @@ import Modal from "react-bootstrap/Modal";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/navigation";
 import { Dropdown } from "react-bootstrap";
-
+import { deleteCookie } from "cookies-next";
 const StyleContainer = styled.div`
   height: 90vh;
   min-width: 300px;
@@ -124,6 +124,7 @@ const StyledBoxConversation = styled.div`
   border-radius: 10px;
 `;
 const StyledSetWidth = styled.div`
+  width: 90%;
   @media (max-width: 46.1875em) {
     width: 100%;
   }
@@ -175,10 +176,14 @@ const SideBar = () => {
   // console.log("filter", filteredContacts);
 
   const logOut = async () => {
-    await signOut();
+    await signOut().then((result) => {
+      console.log("result", result);
+      deleteCookie("loggin");
+      handleCloseModal();
+      return router.push("/");
+    });
+
     if (loading) return <Loading></Loading>;
-    handleCloseModal();
-    return router.push("/");
   };
   const handleClickOpen = () => {
     setOpenNewConversation(!openNewConversation);
@@ -237,6 +242,8 @@ const SideBar = () => {
   const handelDelete = async (id: any) => {
     await deleteDoc(doc(db, "conversation", id));
     setShowDelete(!showDelete);
+
+    console.log("doc id ", id);
   };
   return (
     <>
