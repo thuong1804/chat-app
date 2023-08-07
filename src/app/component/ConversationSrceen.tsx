@@ -20,7 +20,15 @@ import IconButton from "@mui/material/IconButton";
 import SendIcon from "@mui/icons-material/Send";
 import KeyboardVoiceIcon from "@mui/icons-material/KeyboardVoice";
 import { styled } from "styled-components";
-import { KeyboardEventHandler, MouseEventHandler, useState } from "react";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+
+import {
+  KeyboardEventHandler,
+  MouseEventHandler,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   addDoc,
   collection,
@@ -64,6 +72,7 @@ const ConversationSrceen = ({
   conversationmessege: Imessege[];
 }) => {
   const [loggerInUser, _loading, _error] = useAuthState(auth);
+  const [buttonScrollBottom, setbuttonScrollBottom] = useState(false);
   const conversationUser = conversation.user;
   const params = useParams();
   console.log(params.id);
@@ -74,17 +83,59 @@ const ConversationSrceen = ({
   const { recipientEmail, recipient } = useRecipient(conversationUser);
   const [messegeSnapshot, messegeLoading, __error] =
     useCollection(queryMessege);
+
+  // const refMessege = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    ScrollDownMessges();
+  }, []);
+
+  useEffect(() => {
+    buttonscroll();
+  }, []);
+  const buttonscroll = () => {
+    const scrollButton = document
+      .querySelector(".main-chat-box")
+      ?.addEventListener("scroll", (e: any) => {
+        const height = e.target.scrollHeight - e.target.clientHeight;
+        console.log("height", height);
+        if (e.target.scrollTop < height) {
+          return setbuttonScrollBottom(true);
+        } else {
+          setbuttonScrollBottom(false);
+        }
+      });
+
+    // if (scrollButton) {
+    //   setbuttonScrollBottom(true);
+    //   ScrollDownMessges();
+    // } else {
+
+    // }
+  };
+
+  console.log("buttonscroll", buttonScrollBottom);
+  const ScrollDownMessges = () => {
+    const elementMessage = document.querySelector(".main-chat-box");
+    console.log({ elementMessage });
+
+    if (elementMessage) {
+      elementMessage.scrollTo({
+        top: elementMessage.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  };
   //neu giao dien loading messege truoc thi return messege tu ssr {from [id].tsx}
   const showMessege = () => {
     if (messegeLoading) {
       return conversationmessege.map((messege) => (
-        <Messege key={messege.id} messege={messege}></Messege>
+        <Messege key={messege.id} messege={messege} />
       ));
     }
 
     if (messegeSnapshot) {
       return messegeSnapshot.docs.map((messege) => (
-        <Messege key={messege.id} messege={transformMessege(messege)}></Messege>
+        <Messege key={messege.id} messege={transformMessege(messege)} />
       ));
     }
     return null;
@@ -108,6 +159,7 @@ const ConversationSrceen = ({
 
     //reset new mess
     setNewMessege("");
+    ScrollDownMessges();
   };
   const sendMessegeOnEnter: KeyboardEventHandler<HTMLInputElement> = (
     event
@@ -139,12 +191,15 @@ const ConversationSrceen = ({
             <div className="head-info">
               <div className="head-email">{recipientEmail}</div>
               <div>
-                {recipient && (
-                  <span>
-                    Last active:{" "}
-                    {convertFiretoreTimestampToString(recipient?.lastSeen)}
-                  </span>
-                )}
+                <span>
+                  {`${
+                    recipient
+                      ? `Last active: ${convertFiretoreTimestampToString(
+                          recipient?.lastSeen
+                        )}`
+                      : ""
+                  }`}
+                </span>
               </div>
             </div>
           </div>
@@ -154,7 +209,16 @@ const ConversationSrceen = ({
             <MoreVertIcon></MoreVertIcon>
           </div>
         </div>
-        <div className="main-chat-box">{showMessege()}</div>
+        <div className="main-chat-box">
+          <div>{showMessege()}</div>
+          {buttonScrollBottom && (
+            <div className="button-scroll" onClick={ScrollDownMessges}>
+              <IconButton style={{ background: "white" }}>
+                <ArrowDownwardIcon />
+              </IconButton>
+            </div>
+          )}
+        </div>
         <StyledInputContainer>
           <InsertEmoticonIcon></InsertEmoticonIcon>
           <StyledInput

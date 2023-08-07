@@ -2,10 +2,17 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { Imessege } from "../types/type";
 import { auth, db } from "../config/firebase";
 import { styled } from "styled-components";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { Button, IconButton, Menu, MenuItem } from "@mui/material";
-import { useState } from "react";
-import { deleteDoc, doc } from "firebase/firestore";
+import { useEffect, useRef, useState } from "react";
+import {
+  Firestore,
+  deleteDoc,
+  doc,
+  setDoc,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 
 const StyledMessege = styled.div`
   width: fit-content;
@@ -20,6 +27,7 @@ const StyledMessege = styled.div`
 const StyledsenderMessege = styled(StyledMessege)`
   margin-left: auto;
   background-color: #c7ac95;
+  color: whitesmoke;
 `;
 const StyledReceiveMessege = styled(StyledMessege)`
   background-color: whitesmoke;
@@ -44,10 +52,12 @@ const StyledDelete = styled.div`
 `;
 const Messege = ({ messege }: { messege: Imessege }) => {
   const [loggerInUser, _loading, _error] = useAuthState(auth);
+
   const clickshowdelete = () => {
     const styled = StyledDelete;
     return styled;
   };
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -58,16 +68,24 @@ const Messege = ({ messege }: { messege: Imessege }) => {
   };
 
   const clickdelete = async (id: any) => {
-    const docdb = await deleteDoc(doc(db, "messeges", id));
-    // console.log("docdb", docdb);
-    console.log(id);
+    if (loggerInUser?.email === messege.user) {
+      await updateDoc(doc(db, "messeges", id), {
+        text: "Message has been deleted",
+      });
+    } else {
+      alert("do not delete ");
+    }
   };
+
   const MessegeType =
     loggerInUser?.email === messege.user
       ? StyledsenderMessege
       : StyledReceiveMessege;
   return (
-    <div className="aa" style={{ display: "flex", alignItems: "center" }}>
+    <div
+      className="chatbox-icon"
+      style={{ display: "flex", alignItems: "center" }}
+    >
       <MessegeType>
         {messege.text}
         <StyledTimestamp>{messege.sent_at}</StyledTimestamp>
@@ -80,7 +98,7 @@ const Messege = ({ messege }: { messege: Imessege }) => {
         onClick={handleClick}
         style={{ color: "gray" }}
       >
-        <MoreHorizIcon />
+        <MoreVertIcon />
       </Button>
       <Menu
         id="basic-menu"
@@ -99,3 +117,6 @@ const Messege = ({ messege }: { messege: Imessege }) => {
   );
 };
 export default Messege;
+function secDoc(db: Firestore, arg1: string, text: string) {
+  throw new Error("Function not implemented.");
+}
