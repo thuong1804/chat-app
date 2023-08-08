@@ -12,13 +12,13 @@ import AttachFileIcon from "@mui/icons-material/AttachFile";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useParams } from "next/navigation";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, db } from "../config/firebase";
+import { auth, db, storage } from "../config/firebase";
 import { useCollection } from "react-firebase-hooks/firestore";
 import Messege from "./messege";
 import InsertEmoticonIcon from "@mui/icons-material/InsertEmoticon";
 import IconButton from "@mui/material/IconButton";
 import SendIcon from "@mui/icons-material/Send";
-import KeyboardVoiceIcon from "@mui/icons-material/KeyboardVoice";
+import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import { styled } from "styled-components";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
@@ -35,10 +35,17 @@ import {
   doc,
   serverTimestamp,
   setDoc,
+  updateDoc,
 } from "firebase/firestore";
-import { AuthContextProvider } from "../context/AuthContext";
-import Home from "./home";
-// import { AuthContextProvider } from "../context/AuthContext";
+import { Button, Menu, MenuItem } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import {
+  getDownloadURL,
+  ref,
+  uploadBytes,
+  uploadBytesResumable,
+} from "firebase/storage";
+import { v4 as uuidv4 } from "uuid";
 
 const StyledInputContainer = styled.div`
   display: flex;
@@ -74,13 +81,23 @@ const ConversationSrceen = ({
   const [loggerInUser, _loading, _error] = useAuthState(auth);
   const [buttonScrollBottom, setbuttonScrollBottom] = useState(false);
   const conversationUser = conversation.user;
+  const messID = conversationmessege.map((con) => con.id);
   const params = useParams();
-  console.log(params.id);
   const [newMessege, setNewMessege] = useState("");
   const conversationId = params?.id;
   const queryMessege = generateQueryGetMessages(conversationId as string);
-  console.log({ conversationId });
   const { recipientEmail, recipient } = useRecipient(conversationUser);
+  const [uploadImg, setUploadImg] = useState<File | "">("");
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  console.log({ conversationmessege });
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
   const [messegeSnapshot, messegeLoading, __error] =
     useCollection(queryMessege);
 
@@ -97,7 +114,7 @@ const ConversationSrceen = ({
       .querySelector(".main-chat-box")
       ?.addEventListener("scroll", (e: any) => {
         const height = e.target.scrollHeight - e.target.clientHeight;
-        console.log("height", height);
+
         if (e.target.scrollTop < height) {
           return setbuttonScrollBottom(true);
         } else {
@@ -113,7 +130,6 @@ const ConversationSrceen = ({
     // }
   };
 
-  console.log("buttonscroll", buttonScrollBottom);
   const ScrollDownMessges = () => {
     const elementMessage = document.querySelector(".main-chat-box");
     console.log({ elementMessage });
@@ -141,25 +157,29 @@ const ConversationSrceen = ({
     return null;
   };
   const addMessegeToDbAndUpdateLastSeen = async () => {
-    await setDoc(
-      doc(db, "user", loggerInUser?.email as string),
-      {
-        lastSeen: serverTimestamp(),
-      },
-      { merge: true } // chi update nhung gi da thay doi
-    );
-
-    // add new messege
-    await addDoc(collection(db, "messeges"), {
-      conversation_id: conversationId,
-      sent_at: serverTimestamp(),
-      text: newMessege,
-      user: loggerInUser?.email,
-    });
+    if (uploadImg) {
+      handleUploadFile();
+      ScrollDownMessges();
+    } else {
+      await setDoc(
+        doc(db, "user", loggerInUser?.email as string),
+        {
+          lastSeen: serverTimestamp(),
+        },
+        { merge: true } // chi update nhung gi da thay doi
+      );
+      // add new messege
+      await addDoc(collection(db, "messeges"), {
+        conversation_id: conversationId,
+        sent_at: serverTimestamp(),
+        text: newMessege,
+        user: loggerInUser?.email,
+      });
+    }
 
     //reset new mess
     setNewMessege("");
-    ScrollDownMessges();
+    setUploadImg("");
   };
   const sendMessegeOnEnter: KeyboardEventHandler<HTMLInputElement> = (
     event
@@ -177,8 +197,48 @@ const ConversationSrceen = ({
     if (!newMessege) return;
     addMessegeToDbAndUpdateLastSeen();
   };
-  console.log("new messeg", newMessege);
-  console.log("srcenmess", messegeSnapshot);
+  const handleUploadFile = () => {
+    console.log("img", uploadImg);
+    if (!uploadImg) return;
+    const imgRef = ref(storage, uuidv4());
+    const uploadTask = uploadBytesResumable(imgRef, uploadImg);
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        // Observe state change events such as progress, pause, and resume
+        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log("Upload is " + progress + "% done");
+        switch (snapshot.state) {
+          case "paused":
+            console.log("Upload is paused");
+            break;
+          case "running":
+            console.log("Upload is running");
+            break;
+        }
+      },
+      (error) => {
+        // Handle unsuccessful uploads
+      },
+      () => {
+        // Handle successful uploads on complete
+        // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+        getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+          await addDoc(collection(db, "messeges"), {
+            conversation_id: conversationId,
+            sent_at: serverTimestamp(),
+            text: newMessege,
+            user: loggerInUser?.email,
+            img: downloadURL,
+          });
+        });
+      }
+    );
+    handleClose();
+  };
+
   return (
     <>
       <div className="header">
@@ -229,9 +289,39 @@ const ConversationSrceen = ({
           <IconButton onClick={sendMessegeClick} disabled={!newMessege}>
             <SendIcon></SendIcon>
           </IconButton>
-          <IconButton>
-            <KeyboardVoiceIcon></KeyboardVoiceIcon>
-          </IconButton>
+          <Button
+            id="basic-button"
+            aria-controls={open ? "basic-menu" : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? "true" : undefined}
+            onClick={handleClick}
+            style={{ color: "gray" }}
+          >
+            <AddPhotoAlternateIcon />
+          </Button>
+
+          <Menu
+            id="basic-menu"
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            MenuListProps={{
+              "aria-labelledby": "basic-button",
+            }}
+          >
+            <MenuItem>
+              {" "}
+              <input
+                type="file"
+                onChange={(e) => {
+                  e.target.files != null && setUploadImg(e.target.files[0]);
+                }}
+              ></input>
+            </MenuItem>
+            <IconButton onClick={handleUploadFile}>
+              <AddIcon></AddIcon>
+            </IconButton>
+          </Menu>
         </StyledInputContainer>
       </div>
     </>

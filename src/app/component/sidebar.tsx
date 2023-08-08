@@ -242,7 +242,7 @@ const SideBar = () => {
   const handelDelete = async (id: any) => {
     await deleteDoc(doc(db, "conversation", id));
     setShowDelete(!showDelete);
-
+    router.push("/component");
     console.log("doc id ", id);
   };
   return (
