@@ -21,7 +21,10 @@ import SendIcon from "@mui/icons-material/Send";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import { styled } from "styled-components";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-
+import EmojiPicker from "emoji-picker-react";
+import { Theme } from "emoji-picker-react";
+import { EmojiStyle } from "emoji-picker-react";
+import { SkinTones } from "emoji-picker-react";
 import {
   KeyboardEventHandler,
   MouseEventHandler,
@@ -88,7 +91,7 @@ const ConversationSrceen = ({
   const queryMessege = generateQueryGetMessages(conversationId as string);
   const { recipientEmail, recipient } = useRecipient(conversationUser);
   const [uploadImg, setUploadImg] = useState<File | "">("");
-
+  const [showIcon, setShowIcon] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   console.log({ conversationmessege });
@@ -241,6 +244,9 @@ const ConversationSrceen = ({
     );
     handleClose();
   };
+  const clickshowIcon = () => {
+    setShowIcon(showIcon);
+  };
   return (
     <>
       <div className="header">
@@ -282,7 +288,10 @@ const ConversationSrceen = ({
           )}
         </div>
         <StyledInputContainer>
-          <InsertEmoticonIcon></InsertEmoticonIcon>
+          <IconButton onClick={() => clickshowIcon()}>
+            <InsertEmoticonIcon></InsertEmoticonIcon>
+          </IconButton>
+
           <StyledInput
             value={newMessege}
             onChange={(e) => setNewMessege(e.target.value)}
