@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
+"use client";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { Imessege } from "../types/type";
+import { Conversation, Imessege } from "../types/type";
 import { auth, db } from "../config/firebase";
 import { styled } from "styled-components";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -14,45 +15,48 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
+import useRecipient from "../customhook/useRecipient";
 
 const StyledMessege = styled.div`
+  width: fit-content;
   word-break: break-all;
-  max-width: 100%;
+  max-width: 90%;
   min-width: 30%;
-  padding: 15px 15px 15px;
-  border-radius: 8px;
+  padding: 15px 15px 30px;
+  border-radius: 15px;
+  margin: 10px;
   position: relative;
 `;
 const StyledsenderMessege = styled(StyledMessege)`
-  background-color: #c7ac95;
-  color: whitesmoke;
-`;
-const StyledBoxSenderMessege = styled.div`
   margin-left: auto;
-  max-width: 80%;
-  padding-bottom: 10px;
+  background-color: #0d6efd;
+  color: white;
 `;
 const StyledReceiveMessege = styled(StyledMessege)`
   background-color: whitesmoke;
 `;
 const StyledTimestamp = styled.div`
   color: gray;
+  padding: 18px;
   font-size: x-small;
-  text-align: end;
 
-  @media (max-width: 46.1875em) {
-    bottom: -18px;
-    font-size: 5px;
-  }
+  bottom: -15px;
+  right: 0;
+  text-align: right;
 `;
-const StyledSenderImg = styled.div``;
-const StyledBoxImage = styled.div`
-  width: 100%;
-  display: flex;
-  align-items: end;
-  flex-direction: column;
-  justify-content: center;
+const StyledImg = styled.div`
+  margin-bottom: 20px;
+  margin-top: 20px;
+  border: none;
+  margin-left: auto;
+  padding: 15px 15px 30px;
+  border-radius: 15px;
 `;
+const StyledImgeRecienpt = styled.div`
+  background-color: transparent;
+  padding: 10px;
+`;
+
 const Messege = ({ messege }: { messege: Imessege }) => {
   const [loggerInUser, _loading, _error] = useAuthState(auth);
 
@@ -66,11 +70,22 @@ const Messege = ({ messege }: { messege: Imessege }) => {
   };
 
   const clickdelete = async (id: any) => {
+    const text = "This text deleted";
     if (loggerInUser?.email === messege.user) {
-      await updateDoc(doc(db, "messeges", id), {
-        text: "Message has been deleted",
-        img: "",
-      });
+      {
+        updateDoc(doc(db, "messeges", id), {
+          isDeletedSender: true,
+          img: "",
+        });
+      }
+      // }
+      // if (messege.isDeletedSender == true) {
+      //   console.log("aa", text);
+      // }
+      // await updateDoc(doc(db, "messeges", id), {
+      //   text: "Message has been deleted",
+      //   img: "",
+      // });
     } else {
       alert("do not delete ");
     }
@@ -78,8 +93,13 @@ const Messege = ({ messege }: { messege: Imessege }) => {
 
   const MessegeType =
     loggerInUser?.email === messege.user
-      ? StyledBoxSenderMessege
+      ? StyledsenderMessege
       : StyledReceiveMessege;
+
+  const MessImgType =
+    loggerInUser?.email === messege.user ? StyledImg : StyledImgeRecienpt;
+
+  console.log({ loggerInUser, messege });
 
   return (
     <div
@@ -87,45 +107,52 @@ const Messege = ({ messege }: { messege: Imessege }) => {
       style={{ display: "flex", alignItems: "center" }}
     >
       {messege.text && messege.img ? (
-        <MessegeType>
-          {messege.text}
-          <StyledTimestamp>
-            <span>{messege.sent_at}</span>
-          </StyledTimestamp>
-          {messege.img && <img src={messege.img} width={30} alt="" />}
-        </MessegeType>
+        <div>
+          <MessegeType>
+            {messege.text}
+            {messege.img && <img src={messege.img} width={30} alt="" />}
+          </MessegeType>
+        </div>
       ) : messege.img ? (
-        <StyledBoxImage>
-          <StyledSenderImg>
-            <img
-              src={messege.img}
-              width={320}
-              alt=""
-              style={{ border: "1px solid none", borderRadius: "15px" }}
-            />
-            <StyledTimestamp>{messege.sent_at}</StyledTimestamp>
-          </StyledSenderImg>
-        </StyledBoxImage>
+        <MessImgType>
+          <img
+            src={messege.img}
+            width={300}
+            height={300}
+            alt=""
+            style={{
+              border: "1px solid none",
+              borderRadius: "15px",
+              objectFit: "cover",
+            }}
+          />
+        </MessImgType>
       ) : messege.text ? (
         <MessegeType>
-          <StyledsenderMessege>{messege.text}</StyledsenderMessege>
-
-          <StyledTimestamp>{messege.sent_at}</StyledTimestamp>
+          {messege.isDeletedSender && loggerInUser?.email === messege.user ? (
+            <span style={{ fontSize: "1rem", color: "#5b5353" }}>
+              Messege Deleted
+            </span>
+          ) : (
+            messege.text
+          )}
         </MessegeType>
       ) : null}
-
-      {(messege.img || messege.text) && (
-        <Button
-          id="basic-button"
-          aria-controls={open ? "basic-menu" : undefined}
-          aria-haspopup="true"
-          aria-expanded={open ? "true" : undefined}
-          onClick={handleClick}
-          style={{ color: "gray" }}
-        >
-          <MoreVertIcon />
-        </Button>
-      )}
+      {loggerInUser?.email === messege.user &&
+        (messege.img || messege.text) && (
+          <div>
+            <Button
+              id="basic-button"
+              aria-controls={open ? "basic-menu" : undefined}
+              aria-haspopup="true"
+              aria-expanded={open ? "true" : undefined}
+              onClick={handleClick}
+              style={{ color: "gray" }}
+            >
+              <MoreVertIcon />
+            </Button>
+          </div>
+        )}
       <Menu
         id="basic-menu"
         anchorEl={anchorEl}

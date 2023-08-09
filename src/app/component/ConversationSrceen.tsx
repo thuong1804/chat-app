@@ -159,7 +159,6 @@ const ConversationSrceen = ({
   const addMessegeToDbAndUpdateLastSeen = async () => {
     if (uploadImg) {
       handleUploadFile();
-      ScrollDownMessges();
     } else {
       await setDoc(
         doc(db, "user", loggerInUser?.email as string),
@@ -174,12 +173,15 @@ const ConversationSrceen = ({
         sent_at: serverTimestamp(),
         text: newMessege,
         user: loggerInUser?.email,
+        isDeletedReceiver: false,
+        isDeletedSender: false,
       });
     }
 
     //reset new mess
     setNewMessege("");
     setUploadImg("");
+    ScrollDownMessges();
   };
   const sendMessegeOnEnter: KeyboardEventHandler<HTMLInputElement> = (
     event
