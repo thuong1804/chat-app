@@ -20,8 +20,8 @@ import useRecipient from "../customhook/useRecipient";
 const StyledMessege = styled.div`
   width: fit-content;
   word-break: break-all;
-  max-width: 90%;
-  min-width: 30%;
+  max-width: 80%;
+
   padding: 15px 15px 30px;
   border-radius: 15px;
   margin: 10px;
@@ -100,20 +100,15 @@ const Messege = ({ messege }: { messege: Imessege }) => {
     loggerInUser?.email === messege.user ? StyledImg : StyledImgeRecienpt;
 
   console.log({ loggerInUser, messege });
-
+  const clickDeleteDb = async (id: any) => {
+    await deleteDoc(doc(db, "messeges", id));
+  };
   return (
     <div
       className="chatbox-icon"
       style={{ display: "flex", alignItems: "center" }}
     >
-      {messege.text && messege.img ? (
-        <div>
-          <MessegeType>
-            {messege.text}
-            {messege.img && <img src={messege.img} width={30} alt="" />}
-          </MessegeType>
-        </div>
-      ) : messege.img ? (
+      {messege.img ? (
         <MessImgType>
           <img
             src={messege.img}
@@ -163,6 +158,9 @@ const Messege = ({ messege }: { messege: Imessege }) => {
         }}
       >
         <MenuItem onClick={() => clickdelete(messege.id)}>
+          Delete Messages Yourself
+        </MenuItem>
+        <MenuItem onClick={() => clickDeleteDb(messege.id)}>
           Message Delete
         </MenuItem>
       </Menu>
