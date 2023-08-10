@@ -112,7 +112,7 @@ const Messege = ({ messege }: { messege: Imessege }) => {
               border: "1px solid none",
               borderRadius: "15px",
               objectFit: "cover",
-              width: "200",
+              width: "200px",
               height: "auto",
             }}
           />
