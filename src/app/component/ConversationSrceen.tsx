@@ -1,4 +1,6 @@
 "use client";
+import dynamic from "next/dynamic";
+import EmojiPicker from "emoji-picker-react";
 import useRecipient from "../customhook/useRecipient";
 import "../component/conversationSrceen.scss";
 import { Conversation, Imessege } from "../types/type";
@@ -21,10 +23,11 @@ import SendIcon from "@mui/icons-material/Send";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import { styled } from "styled-components";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import EmojiPicker from "emoji-picker-react";
+
 import { Theme } from "emoji-picker-react";
 import { EmojiStyle } from "emoji-picker-react";
 import { SkinTones } from "emoji-picker-react";
+
 import {
   KeyboardEventHandler,
   MouseEventHandler,
@@ -96,6 +99,12 @@ const ConversationSrceen = ({
   const open = Boolean(anchorEl);
   console.log({ conversationmessege });
 
+  const Picker = dynamic(
+    () => {
+      return import("emoji-picker-react");
+    },
+    { ssr: false }
+  );
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -244,8 +253,11 @@ const ConversationSrceen = ({
     );
     handleClose();
   };
-  const clickshowIcon = () => {
-    setShowIcon(showIcon);
+  const clickshowIcon = (e: any, emojiObject: any) => {
+    setNewMessege((pre) => pre + e.emoji);
+    console.log("emoj", emojiObject);
+    console.log("em", e.emoji);
+    setShowIcon(!showIcon);
   };
   return (
     <>
@@ -288,8 +300,11 @@ const ConversationSrceen = ({
           )}
         </div>
         <StyledInputContainer>
-          <IconButton onClick={() => clickshowIcon()}>
+          <IconButton onClick={() => setShowIcon(!showIcon)}>
             <InsertEmoticonIcon></InsertEmoticonIcon>
+            {showIcon && (
+              <EmojiPicker onEmojiClick={clickshowIcon}></EmojiPicker>
+            )}
           </IconButton>
 
           <StyledInput
