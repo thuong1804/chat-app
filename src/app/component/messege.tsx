@@ -22,7 +22,7 @@ const StyledMessege = styled.div`
   word-break: break-all;
   max-width: 80%;
 
-  padding: 15px 15px 30px;
+  padding: 10px 15px 10px;
   border-radius: 15px;
   margin: 10px;
   position: relative;
@@ -70,22 +70,11 @@ const Messege = ({ messege }: { messege: Imessege }) => {
   };
 
   const clickdelete = async (id: any) => {
-    const text = "This text deleted";
     if (loggerInUser?.email === messege.user) {
-      {
-        updateDoc(doc(db, "messeges", id), {
-          isDeletedSender: true,
-          img: "",
-        });
-      }
-      // }
-      // if (messege.isDeletedSender == true) {
-      //   console.log("aa", text);
-      // }
-      // await updateDoc(doc(db, "messeges", id), {
-      //   text: "Message has been deleted",
-      //   img: "",
-      // });
+      await updateDoc(doc(db, "messeges", id), {
+        isDeletedSender: true,
+        img: "",
+      });
     } else {
       alert("do not delete ");
     }
@@ -101,7 +90,13 @@ const Messege = ({ messege }: { messege: Imessege }) => {
 
   console.log({ loggerInUser, messege });
   const clickDeleteDb = async (id: any) => {
-    await deleteDoc(doc(db, "messeges", id));
+    if (loggerInUser?.email === messege.user) {
+      await updateDoc(doc(db, "messeges", id), {
+        isDeletedSender: true,
+        isDeletedReceiver: true,
+        img: "",
+      });
+    }
   };
   return (
     <div
@@ -124,9 +119,14 @@ const Messege = ({ messege }: { messege: Imessege }) => {
         </MessImgType>
       ) : messege.text ? (
         <MessegeType>
-          {messege.isDeletedSender && loggerInUser?.email === messege.user ? (
-            <span style={{ fontSize: "1rem", color: "#5b5353" }}>
+          {messege.isDeletedReceiver ? (
+            <span style={{ fontSize: "1rem", color: "#f3c8c8" }}>
               Messege Deleted
+            </span>
+          ) : messege.isDeletedSender &&
+            loggerInUser?.email === messege.user ? (
+            <span style={{ fontSize: "1rem", color: "#5b5353" }}>
+              Messege Deleted 1
             </span>
           ) : (
             messege.text
