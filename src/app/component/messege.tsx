@@ -107,13 +107,13 @@ const Messege = ({ messege }: { messege: Imessege }) => {
         <MessImgType>
           <img
             src={messege.img}
-            width={300}
-            height={300}
             alt=""
             style={{
               border: "1px solid none",
               borderRadius: "15px",
               objectFit: "cover",
+              width: "200",
+              height: "auto",
             }}
           />
         </MessImgType>
