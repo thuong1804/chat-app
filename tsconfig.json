@@ -35,7 +35,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "middleware.tsx"
-  ],
+, "src/app/firebase-messaging-sw.js"  ],
   "exclude": [
     "node_modules"
   ]

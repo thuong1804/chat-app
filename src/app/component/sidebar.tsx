@@ -3,6 +3,8 @@ import * as firebase from "firebase/app";
 import {
   addDoc,
   collection,
+  deleteDoc,
+  doc,
   getDocs,
   onSnapshot,
   orderBy,
@@ -25,7 +27,7 @@ import { useEffect, useState } from "react";
 import { useAuthState, useSignOut } from "react-firebase-hooks/auth";
 import { useCollection } from "react-firebase-hooks/firestore";
 import * as EmailValidator from "email-validator";
-
+import DropdownButton from "react-bootstrap/DropdownButton";
 import { Conversation } from "@/app/types/type";
 import ConversationSelect from "./ConversationSelect";
 import Loading from "./login-loading";
@@ -33,6 +35,8 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/navigation";
+import { Dropdown } from "react-bootstrap";
+import { deleteCookie } from "cookies-next";
 const StyleContainer = styled.div`
   height: 90vh;
   min-width: 300px;
@@ -48,6 +52,12 @@ const StyleContainer = styled.div`
   /* Hide scrollbar for IE, Edge and Firefox */
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+
+  @media (max-width: 46.1875em) {
+    width: 100%;
+    border: none;
+    max-width: unset;
+  }
 `;
 
 const StyleHeader = styled.div`
@@ -81,7 +91,12 @@ const StyleInputSearch = styled.input`
   border: none;
   flex: 1;
 `;
-
+const StyledContainerConversationButton = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 5px;
+`;
 const StyleSideBarButton = styled.button`
   position: relative;
   width: 100%;
@@ -108,12 +123,19 @@ const StyledBoxConversation = styled.div`
   margin-top: 20px;
   border-radius: 10px;
 `;
+const StyledSetWidth = styled.div`
+  width: 90%;
+  @media (max-width: 46.1875em) {
+    width: 100%;
+  }
+`;
 const SideBar = () => {
   const [loggerInUser, _loading, _error] = useAuthState(auth);
   const [openNewConversation, setOpenNewConversation] = useState(false);
   const [show, setShow] = useState(false);
   const [signOut, loading, error] = useSignOut(auth);
   const [textInputEmail, setTextInputEmail] = useState("");
+  const [showDelete, setShowDelete] = useState(false);
   const router = useRouter();
   const handleCloseModal = () => setShow(false);
   const handleShowModal = () => setShow(true);
@@ -154,15 +176,20 @@ const SideBar = () => {
   // console.log("filter", filteredContacts);
 
   const logOut = async () => {
-    await signOut();
+    await signOut().then((result) => {
+      console.log("result", result);
+      deleteCookie("loggin");
+      handleCloseModal();
+      return router.push("/");
+    });
+
     if (loading) return <Loading></Loading>;
-    handleCloseModal();
-    return router.push("/");
   };
   const handleClickOpen = () => {
     setOpenNewConversation(!openNewConversation);
     setTextInputEmail("");
   };
+
   // ham` kiem tra conversation da ton` tai khi nguoi dung dang nhap hay chua
   const queryGetConversationForCurrentUser = query(
     collection(db, "conversation"),
@@ -198,6 +225,7 @@ const SideBar = () => {
         emailRecipient: textInputEmail,
       });
     }
+
     handleClose();
   };
   const handelTextEmail = (e: any) => {
@@ -211,13 +239,21 @@ const SideBar = () => {
         .emailRecipient.toLowerCase()
         .includes(inputSearch.toLowerCase())
   );
-
+  const handelDelete = async (id: any) => {
+    await deleteDoc(doc(db, "conversation", id));
+    setShowDelete(!showDelete);
+    router.push("/component");
+    console.log("doc id ", id);
+  };
   return (
     <>
       <StyleContainer>
         <StyleHeader>
           <Tooltip title={loggerInUser?.email} placement="right">
-            <StyleAvatar src={loggerInUser?.photoURL || ""}></StyleAvatar>
+            <StyleAvatar
+              src={loggerInUser?.photoURL || ""}
+              onClick={() => router.push("/component")}
+            ></StyleAvatar>
           </Tooltip>
           <div>
             <IconButton>
@@ -245,11 +281,42 @@ const SideBar = () => {
         </StyleSideBarButton>
         <StyledBoxConversation>
           {conversationSnapshotFilterd?.map((conversation) => (
-            <ConversationSelect
-              key={conversation.id}
-              id={conversation.id}
-              conversationUser={(conversation.data() as Conversation).user}
-            />
+            <StyledContainerConversationButton key={conversation.id}>
+              <StyledSetWidth>
+                <ConversationSelect
+                  id={conversation.id}
+                  conversationUser={(conversation.data() as Conversation).user}
+                />
+              </StyledSetWidth>
+
+              <DropdownButton id="dropdown-item-button" title="" variant="none">
+                <Dropdown.Item
+                  as="button"
+                  onClick={() => setShowDelete(!showDelete)}
+                >
+                  Delete Conversation
+                </Dropdown.Item>
+              </DropdownButton>
+              <Dialog
+                open={showDelete}
+                onClose={() => setShowDelete(!showDelete)}
+              >
+                <DialogTitle>Delete Conversation</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    Do you want to delete Conversation?
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setShowDelete(!showDelete)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={() => handelDelete(conversation.id)}>
+                    Delete
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </StyledContainerConversationButton>
           ))}
         </StyledBoxConversation>
 
