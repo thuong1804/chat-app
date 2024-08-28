@@ -1,89 +1,73 @@
-// import Sidebar from "@/app/component/sidebar";
-// import { auth, db } from "@/app/config/firebase";
-// import { Conversation } from "@/app/types/type";
-// import { getRecipientEmail } from "@/app/ultils/getRecipientEmail";
-// import { doc, getDoc } from "firebase/firestore";
-// import "../../conversation/conversation.scss";
-
-// async function getServerSideProps(id: string) {
-//   const conversationRef = doc(db, "conversation", id);
-//   const conversationSnapshot = await getDoc(conversationRef);
-
-//   return {
-//     props: {
-//       conversation: conversationSnapshot.data() as Conversation,
-//     },
-//   };
-// }
-
-// export default async function Page(conversation: Conversation) {
-//   return (
-//     <div>
-//       <div className="main-box">
-//         <Sidebar></Sidebar>
-//         chat with {getRecipientEmail(conversation.user)}
-//       </div>
-//     </div>
-//   );
-// }
-
-"use client";
-import { use } from "react";
-import { auth, db } from "@/app/config/firebase";
+import { app, auth, db } from "@/app/config/firebase";
 import { Conversation } from "../../types/type";
-import { doc, getDoc, getDocs } from "firebase/firestore";
-import { getRecipientEmail } from "@/app/ultils/getRecipientEmail";
-import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { doc, getDoc, getDocs } from "firebase/firestore";
 import SideBar from "@/app/component/sidebar";
 import "../../conversation/conversation.scss";
-import { generateKey } from "crypto";
+
 import {
   generateQueryGetMessages,
   transformMessege,
 } from "@/app/ultils/generateQueryGetMessages";
-import ConversationSrceen from "@/app/component/ConversationSrceen";
+import RenderPage from "./getside";
 
-export function Page({ params: { id } }: any) {
-  const [conversation, setConversation] = useState<any>();
-  const [conversationmessege, setConversationmessege] = useState<any>([]);
-  const [loggedInUser, _loading, _error] = useAuthState(auth);
+async function getData(id: string) {
+  const conversationRef = doc(db, "conversation", id as string);
+  const conversationSnapshot = await getDoc(conversationRef);
+  //get messeges user and recipient
+  const queryMessege = generateQueryGetMessages(id);
+  const messegeSnapshot = await getDocs(queryMessege);
+  const messege = messegeSnapshot.docs.map((messegeDoc) =>
+    transformMessege(messegeDoc)
+  );
+  return {
+    props: {
+      conversation: conversationSnapshot.data() as Conversation,
+      messege,
+    },
+  };
+}
 
-  console.log({ conversation });
-  console.log({ conversationmessege });
-  useEffect(() => {
-    const getConversation = async () => {
-      // get conversation, to know who we are chatting with
-      const conversationRef = doc(db, "conversation", id as string);
-      const conversationSnapshot = await getDoc(conversationRef);
-      // get all messages between logged in user and recipient in this conversation
-      const conversation = conversationSnapshot.data() as Conversation;
-      //get messeges user and recipient
-      const queryMessege = generateQueryGetMessages(id);
-      const messegeSnapshot = await getDocs(queryMessege);
-      const mess = messegeSnapshot.docs.map((messegeDoc) =>
-        transformMessege(messegeDoc)
-      );
-
-      setConversationmessege(mess);
-      setConversation(conversation);
-    };
-
-    id && getConversation();
-  }, [id]);
+// eslint-disable-next-line @next/next/no-async-client-component
+export default async function Page(props: any) {
+  const data = await getData(props.params.id);
+  const dataMapping = data.props.conversation;
+  const messMapping = data.props.messege;
 
   return (
-    <div className="container">
-      <div className="name-box-chat">
-        <SideBar></SideBar>
-
-        <ConversationSrceen
-          conversation={conversation}
-          conversationmessege={conversationmessege}
-        ></ConversationSrceen>
-        <div className="container-box-chat">asdassdas</div>
-      </div>
-    </div>
+    <>
+      <RenderPage
+        dataMapping={dataMapping}
+        messMapping={messMapping}
+      ></RenderPage>
+    </>
   );
 }
-export default Page;
+
+// const RenderPage = ({ dataMapping, messMapping }: any) => {
+//   const [loggerInUser, loading, _error] = useAuthState(auth);
+//   const { push } = useRouter();
+//   console.log({ dataMapping });
+//   useEffect(() => {
+//     if (!loggerInUser) push("/");
+//   }, []);
+
+//   return (
+//     <>
+//       {loggerInUser && (
+//         <div className="container-box-chat">
+//           <div className="name-box-chat">
+//             <div className="side-bar-chat">
+//               <SideBar></SideBar>
+//             </div>
+
+//             <ConversationSrceen
+//               conversation={dataMapping}
+//               conversationmessege={messMapping}
+//             ></ConversationSrceen>
+//           </div>
+//         </div>
+//       )}
+//     </>
+//   );
+// };

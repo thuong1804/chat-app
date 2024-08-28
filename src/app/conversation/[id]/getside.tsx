@@ -1,44 +1,33 @@
-import { use } from "react";
-import { auth, db } from "@/app/config/firebase";
-import { Conversation } from "../../types/type";
-import { doc, getDoc } from "firebase/firestore";
-import { getRecipientEmail } from "@/app/ultils/getRecipientEmail";
-import { useEffect, useState } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
+"use client";
+import ConversationSrceen from "@/app/component/ConversationSrceen";
 import SideBar from "@/app/component/sidebar";
+import { auth } from "@/app/config/firebase";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useAuthState } from "react-firebase-hooks/auth";
 
-export function Page({ params: { id } }: any) {
-  const [conversation, setConversation] = useState<any>();
-  const [loggedInUser, _loading, _error] = useAuthState(auth);
-
-  console.log({ conversation });
-
-  useEffect(() => {
-    const getConversation = async () => {
-      // get conversation, to know who we are chatting with
-      const conversationRef = doc(db, "conversation", id as string);
-      const conversationSnapshot = await getDoc(conversationRef);
-      // get all messages between logged in user and recipient in this conversation
-      const conversation = conversationSnapshot.data() as Conversation;
-
-      setConversation(conversation);
-    };
-
-    id && getConversation();
-  }, [id]);
+const RenderPage = ({ dataMapping, messMapping }: any) => {
+  const [loggerInUser, loading, _error] = useAuthState(auth);
+  const { push } = useRouter();
+  console.log({ dataMapping });
 
   return (
-    <div>
-      <SideBar></SideBar>
-      {conversation &&
-        loggedInUser &&
-        getRecipientEmail(conversation?.user, loggedInUser)}
-    </div>
+    <>
+      {loggerInUser && (
+        <div className="container-box-chat">
+          <div className="name-box-chat">
+            <div className="side-bar-chat">
+              <SideBar></SideBar>
+            </div>
+
+            <ConversationSrceen
+              conversation={dataMapping}
+              conversationmessege={messMapping}
+            ></ConversationSrceen>
+          </div>
+        </div>
+      )}
+    </>
   );
-  // return {
-  //   props: {
-  //     conversation: conversationSnapshot.data() as Conversation,
-  //   },
-  // };
-}
-export default Page;
+};
+export default RenderPage;

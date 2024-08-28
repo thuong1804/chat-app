@@ -15,4 +15,7 @@ export interface Imessege {
   text: string;
   sent_at: string | null;
   user: string;
+  img?: string;
+  isDeletedReceiver: boolean;
+  isDeletedSender: boolean;
 }

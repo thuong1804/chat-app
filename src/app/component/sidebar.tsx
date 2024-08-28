@@ -1,5 +1,17 @@
 "use client";
-import { Avatar, Button, IconButton, TextField, Tooltip } from "@mui/material";
+import * as firebase from "firebase/app";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
+import { Avatar, IconButton, TextField, Tooltip } from "@mui/material";
 import ChatIcon from "@mui/icons-material/Chat";
 import MoreVerTicalIcon from "@mui/icons-material/MoreVert";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -10,23 +22,28 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import styled from "styled-components";
-import { signOut } from "firebase/auth";
 import { auth, db } from "../config/firebase";
-import { useState } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
+import { useEffect, useState } from "react";
+import { useAuthState, useSignOut } from "react-firebase-hooks/auth";
 import { useCollection } from "react-firebase-hooks/firestore";
 import * as EmailValidator from "email-validator";
-import { addDoc, collection, query, where } from "firebase/firestore";
+import DropdownButton from "react-bootstrap/DropdownButton";
 import { Conversation } from "@/app/types/type";
 import ConversationSelect from "./ConversationSelect";
-
+import Loading from "./login-loading";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { useRouter } from "next/navigation";
+import { Dropdown } from "react-bootstrap";
+import { deleteCookie } from "cookies-next";
 const StyleContainer = styled.div`
-  height: 100vh;
+  height: 90vh;
   min-width: 300px;
   max-width: 350px;
   overflow-y: scroll;
   border-right: 1px solid whitesmoke;
-
+  padding: 15px;
   /* Hide scrollbar for Chrome, Safari and Opera */
   &::-webkit-scrollbar {
     display: none;
@@ -35,6 +52,12 @@ const StyleContainer = styled.div`
   /* Hide scrollbar for IE, Edge and Firefox */
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+
+  @media (max-width: 46.1875em) {
+    width: 100%;
+    border: none;
+    max-width: unset;
+  }
 `;
 
 const StyleHeader = styled.div`
@@ -42,7 +65,8 @@ const StyleHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   position: sticky;
-  background-color: white;
+  background-color: whitesmoke;
+  border-radius: 10px;
   padding: 10px;
   border-bottom: 1px solid whitesmoke;
   top: 0;
@@ -67,30 +91,105 @@ const StyleInputSearch = styled.input`
   border: none;
   flex: 1;
 `;
-
-const StyleSideBarButton = styled(Button)`
+const StyledContainerConversationButton = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 5px;
+`;
+const StyleSideBarButton = styled.button`
+  position: relative;
   width: 100%;
-  border-bottom: 1px solid whitesmoke;
-  color: blue;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  border-radius: 10px;
+  color: rgb(97 140 230);
+  font-weight: bold;
+  transition: color 1s linear;
+  &:hover {
+    background-color: rgb(97 140 230);
+    color: whitesmoke;
+  }
+`;
+const StyledNameLogOut = styled.span`
+  font-size: 1.6rem;
   font-weight: bold;
 `;
-
+const StyledBoxConversation = styled.div`
+  background-color: whitesmoke;
+  margin-top: 20px;
+  border-radius: 10px;
+`;
+const StyledSetWidth = styled.div`
+  width: 90%;
+  @media (max-width: 46.1875em) {
+    width: 100%;
+  }
+`;
 const SideBar = () => {
   const [loggerInUser, _loading, _error] = useAuthState(auth);
   const [openNewConversation, setOpenNewConversation] = useState(false);
+  const [show, setShow] = useState(false);
+  const [signOut, loading, error] = useSignOut(auth);
   const [textInputEmail, setTextInputEmail] = useState("");
+  const [showDelete, setShowDelete] = useState(false);
+  const router = useRouter();
+  const handleCloseModal = () => setShow(false);
+  const handleShowModal = () => setShow(true);
+
+  const [inputSearch, setInputSearch] = useState("");
+  // const [data, setData] = useState<any[]>([]);
+  // const [filteredContacts, setFilteredContacts] = useState<any[]>([]);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const q = query(collection(db, "conversation"));
+  //     const doc_refs = await getDocs(q);
+  //     console.log(q);
+  //     const res: any[] = [];
+  //     doc_refs.forEach((item) => {
+  //       res.push({
+  //         id: item.id,
+  //         ...item.data(),
+  //       });
+  //     });
+  //     console.log(doc_refs.docs);
+  //     console.log("textinput", inputSearch);
+  //     setData(res);
+  //   };
+  //   fetchData();
+  // }, []);
+
+  // useEffect(() => {
+  //   setFilteredContacts(
+  //     data.filter((item: any) => {
+  //       return item.emailRecipient
+  //         .toLowerCase()
+  //         .includes(inputSearch.toLowerCase());
+  //     })
+  //   );
+  // }, [inputSearch, data]);
+
+  // console.log("data", data);
+  // console.log("filter", filteredContacts);
 
   const logOut = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.log("error", error);
-    }
+    await signOut().then((result) => {
+      console.log("result", result);
+      deleteCookie("loggin");
+      handleCloseModal();
+      return router.push("/");
+    });
+
+    if (loading) return <Loading></Loading>;
   };
   const handleClickOpen = () => {
     setOpenNewConversation(!openNewConversation);
     setTextInputEmail("");
   };
+
   // ham` kiem tra conversation da ton` tai khi nguoi dung dang nhap hay chua
   const queryGetConversationForCurrentUser = query(
     collection(db, "conversation"),
@@ -123,71 +222,157 @@ const SideBar = () => {
       //add vao db conversation
       await addDoc(collection(db, "conversation"), {
         user: [loggerInUser?.email, textInputEmail],
+        emailRecipient: textInputEmail,
       });
     }
+
     handleClose();
   };
   const handelTextEmail = (e: any) => {
     setTextInputEmail(e.target.value);
   };
+
+  const conversationSnapshotFilterd = conversationSnapshot?.docs?.filter(
+    (con: any) =>
+      con
+        .data()
+        .emailRecipient.toLowerCase()
+        .includes(inputSearch.toLowerCase())
+  );
+  const handelDelete = async (id: any) => {
+    await deleteDoc(doc(db, "conversation", id));
+    setShowDelete(!showDelete);
+    router.push("/component");
+    console.log("doc id ", id);
+  };
   return (
-    <StyleContainer>
-      <StyleHeader>
-        <Tooltip title={loggerInUser?.email} placement="right">
-          <StyleAvatar src={loggerInUser?.photoURL || ""}></StyleAvatar>
-        </Tooltip>
-        <div>
-          <IconButton>
-            <ChatIcon></ChatIcon>
-          </IconButton>
-          <IconButton>
-            <MoreVerTicalIcon></MoreVerTicalIcon>
-          </IconButton>
-          <IconButton onClick={logOut}>
-            <LogoutIcon></LogoutIcon>
-          </IconButton>
-        </div>
-      </StyleHeader>
-      <StyleSearch>
-        <SearchIcon></SearchIcon>
-        <StyleInputSearch placeholder="Search in convertion"></StyleInputSearch>
-      </StyleSearch>
-      <StyleSideBarButton onClick={handleClickOpen}>
-        Start New Conversation
-      </StyleSideBarButton>
-      {conversationSnapshot?.docs.map((conversation) => (
-        <ConversationSelect
-          key={conversation.id}
-          id={conversation.id}
-          conversationUser={(conversation.data() as Conversation).user}
-        />
-      ))}
-      <Dialog open={openNewConversation} onClose={handleClose}>
-        <DialogTitle>New Conversation</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Please enter a Google email address for the user you wish chat with
-          </DialogContentText>
-          <TextField
-            autoFocus
-            margin="dense"
-            id="name"
-            label="Email Address"
-            type="email"
-            fullWidth
-            variant="standard"
-            onChange={handelTextEmail}
-            value={textInputEmail}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button disabled={!textInputEmail} onClick={handleCreateConversation}>
-            Create
+    <>
+      <StyleContainer>
+        <StyleHeader>
+          <Tooltip title={loggerInUser?.email} placement="right">
+            <StyleAvatar
+              src={loggerInUser?.photoURL || ""}
+              onClick={() => router.push("/component")}
+            ></StyleAvatar>
+          </Tooltip>
+          <div>
+            <IconButton>
+              <ChatIcon></ChatIcon>
+            </IconButton>
+            <IconButton>
+              <MoreVerTicalIcon></MoreVerTicalIcon>
+            </IconButton>
+            <IconButton onClick={handleShowModal}>
+              <LogoutIcon></LogoutIcon>
+            </IconButton>
+          </div>
+        </StyleHeader>
+        <StyleSearch>
+          <SearchIcon></SearchIcon>
+          <StyleInputSearch
+            value={inputSearch}
+            id="user"
+            placeholder="Search in convertion"
+            onChange={(e) => setInputSearch(e.target.value)}
+          ></StyleInputSearch>
+        </StyleSearch>
+        <StyleSideBarButton onClick={handleClickOpen}>
+          Start New Conversation
+        </StyleSideBarButton>
+        <StyledBoxConversation>
+          {conversationSnapshotFilterd?.map((conversation) => (
+            <StyledContainerConversationButton key={conversation.id}>
+              <StyledSetWidth>
+                <ConversationSelect
+                  id={conversation.id}
+                  conversationUser={(conversation.data() as Conversation).user}
+                />
+              </StyledSetWidth>
+
+              <DropdownButton id="dropdown-item-button" title="" variant="none">
+                <Dropdown.Item
+                  as="button"
+                  onClick={() => setShowDelete(!showDelete)}
+                >
+                  Delete Conversation
+                </Dropdown.Item>
+              </DropdownButton>
+              <Dialog
+                open={showDelete}
+                onClose={() => setShowDelete(!showDelete)}
+              >
+                <DialogTitle>Delete Conversation</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    Do you want to delete Conversation?
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setShowDelete(!showDelete)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={() => handelDelete(conversation.id)}>
+                    Delete
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </StyledContainerConversationButton>
+          ))}
+        </StyledBoxConversation>
+
+        <Dialog open={openNewConversation} onClose={handleClose}>
+          <DialogTitle>New Conversation</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Please enter a Google email address for the user you wish chat
+              with
+            </DialogContentText>
+            <TextField
+              autoFocus
+              margin="dense"
+              id="name"
+              label="Email Address"
+              type="email"
+              fullWidth
+              variant="standard"
+              onChange={handelTextEmail}
+              value={textInputEmail}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Cancel</Button>
+            <Button
+              disabled={!textInputEmail}
+              onClick={handleCreateConversation}
+            >
+              Create
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </StyleContainer>
+      <Modal
+        show={show}
+        onHide={handleCloseModal}
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Sign Out</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Hi <StyledNameLogOut>{loggerInUser?.displayName}</StyledNameLogOut> !
+          Do you want to sign out of Chatter?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            Close
           </Button>
-        </DialogActions>
-      </Dialog>
-    </StyleContainer>
+          <Button variant="primary" onClick={logOut}>
+            Sure
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 };
 export default SideBar;
