@@ -2,6 +2,9 @@ import useRecipient from "../customhook/useRecipient";
 import { Conversation } from "../types/type";
 import styled from "styled-components";
 import RecipientAvatar from "../component/recipientAvatar";
+import { useRouter } from "next/navigation";
+import useSwipe from "../customhook/useSwipe";
+
 const StyledContainer = styled.div`
   display: flex;
   align-items: center;
@@ -9,6 +12,8 @@ const StyledContainer = styled.div`
   padding: 15px;
   gap: 10px;
   word-break: break-all;
+  color: gray;
+  font-size: 0.8rem;
 
   &:hover {
     background-color: #e9eaeb;
@@ -17,20 +22,35 @@ const StyledContainer = styled.div`
 
 const ConversationSelect = ({
   id,
-  coversationUser,
+  conversationUser,
 }: {
   id: string;
-  coversationUser: Conversation["users"];
+  conversationUser: Conversation["user"];
 }) => {
-  const { recipient, recipientEmail } = useRecipient(coversationUser);
+  const { recipient, recipientEmail } = useRecipient(conversationUser);
+  const router = useRouter();
+  const onSelectConversation = () => {
+    router.push(`/conversation/${id}`);
+  };
+  const swipeHandlers = useSwipe({
+    onSwipedLeft: () => router.push("/component"),
+    onSwipedRight: function (): void {
+      throw new Error("Function not implemented.");
+    },
+  });
+
   return (
-    <StyledContainer>
-      <RecipientAvatar
-        recipient={recipient}
-        recipientEmail={recipientEmail}
-      ></RecipientAvatar>
-      <span>{recipientEmail}</span>
-    </StyledContainer>
+    <>
+      <div {...swipeHandlers}>
+        <StyledContainer onClick={onSelectConversation}>
+          <RecipientAvatar
+            recipient={recipient}
+            recipientEmail={recipientEmail}
+          ></RecipientAvatar>
+          <span>{recipientEmail}</span>
+        </StyledContainer>
+      </div>
+    </>
   );
 };
 export default ConversationSelect;

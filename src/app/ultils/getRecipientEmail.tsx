@@ -3,6 +3,6 @@ import { Conversation } from "../types/type";
 
 // componet lay email tu nguoi duoc moi
 export const getRecipientEmail = (
-  coversationUser: Conversation["users"],
+  conversationUser: Conversation["user"],
   loggerInUser?: User | null
-) => coversationUser.find((userEmail) => userEmail !== loggerInUser?.email); // tim email khac voi email loggin
+) => conversationUser.find((userEmail) => userEmail !== loggerInUser?.email); // tim email khac voi email loggin

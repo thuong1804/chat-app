@@ -1,0 +1,19 @@
+.name-box-chat {
+  display: flex;
+}
+.container-box-chat {
+  flex-grow: 1;
+  overflow: scroll;
+  height: 100vh;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.side-bar-chat {
+  @media (max-width: 46.1875em) {
+    display: none;
+  }
+}

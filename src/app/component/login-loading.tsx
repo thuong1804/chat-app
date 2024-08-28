@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import WhatsAppLogo from "../acsset/WhatsApp.svg.webp";
 import Image from "next/image";
 import { CircularProgress } from "@mui/material";
-
+import "react-toastify/dist/ReactToastify.css";
 const StyleLoginContainer = styled.div`
   display: flex;
   align-items: center;
